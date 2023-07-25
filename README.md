@@ -39,7 +39,7 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
     - `text_positionx` : la position en x du texte `left | center | right`, par défaut `center`
     - `text_positiony` : la position en y du texte `top | center | bottom`, par défaut `center`
     - `text_font` : la police d'écriture du texte, par défaut `Arial`
-    - `text_font_size` : la taille de la police d'écriture du texte, par défaut `53`
+    - `text_font_size` : la taille de la police d'écriture du texte, par défaut `56`
     - `ratio` : taille du fichier x ratio => aggrndit ou rétrécit le fichier, par défaut `1`
     - `fullscreen` : affiche le fichier en plein écran, par défaut `false`
 - `/sendtext` : envoie un texte sur la page stream
@@ -47,7 +47,7 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
   - `positionx` : la position en x du texte `left | center | right`, par défaut `center`
   - `positiony` : la position en y du texte `top | center | bottom`, par défaut `bottom`
   - `font` : la police d'écriture du texte, par défaut `Arial`
-  - `font_size` : la taille de la police d'écriture du texte, par défaut `53`
+  - `font_size` : la taille de la police d'écriture du texte, par défaut `56`
 - `/flush` : vide l'affichage de la page stream
 
 # Sur la page Stream
