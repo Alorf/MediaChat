@@ -26,7 +26,7 @@ Astuce : mettez vos vidéos sur Discord, copiez le lien et collez-le sur la page
 
 ## Discord
 
-Grâce à l'implémentation Discord vous n'êtes pas obliger d'héberger le serveur sur un VPS, vous pouvez l'héberger sur votre ordinateur et utiliser Discord pour envoyer les fichiers.
+Grâce à l'implémentation Discord vous n'êtes pas obligé d'héberger le serveur sur un VPS, vous pouvez l'héberger sur votre ordinateur et utiliser Discord pour envoyer les fichiers.
 Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot est assez complète.
 
 ### Les commandes
