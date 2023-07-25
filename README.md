@@ -65,7 +65,7 @@ Pour déployer le projet, soit vous passez par un VPS pas cher, soit vous l'héb
 ## Le bot Discord
 Dans le dossier `Discord`, vous avez un fichier `config.json`, vous devez y mettre le `clientId`, le `guildId` et le `token` de votre bot Discord
 # Contact
-Si vous souhaitez me contacter, j'ai un serveur Discord : https://Discord.gg/uwcTrVe68r
+Si vous souhaitez me contacter, j'ai un serveur Discord : https://discord.gg/uwcTrVe68r
 
 # Donation
 Si vous souhaitez me soutenir, vous pouvez me faire un don sur buymeacoffee : https://www.buymeacoffee.com/Alorf
