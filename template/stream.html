@@ -1,0 +1,283 @@
+<div id="containerStream"></div>
+
+<style>
+    #containerStream {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+    }
+
+    #movable,
+    .movable {
+        position: absolute;
+        /* text wrap */
+    }
+
+    #fileStream {
+        position: absolute;
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+    var timeout;
+
+    var socket = io();
+    const containerStream = document.getElementById("containerStream");
+    var fileStream = document.getElementById("fileStream");
+    var movable = document.getElementById("movable");
+
+    socket.on('connect', function () {
+        socket.emit('msg', { data: 'StreamConnected' });
+
+    });
+
+    socket.io.on('reconnect', () => {
+        socket.emit('msg', { data: 'StreamReconnected' });
+        location.reload();
+    })
+
+    socket.on('disconnect', function () {
+        socket.emit('msg', { data: 'StreamDisconnected' });
+    });
+
+    //Get the blob with socket
+    socket.on('sendFile', function (data) {
+
+        if (timeout != undefined || timeout != 0) {
+            clearTimeout(timeout);
+        }
+
+        if (data.isLink == 'false') {
+            var blob = new Blob([new Uint8Array(data.data.split(",").map((e) => {
+                return parseInt(e);
+            }))], { type: data.typeFile });
+            console.log(blob);
+            url = URL.createObjectURL(blob);
+        } else {
+            url = data.data;
+        }
+
+        if (isFileShowing()) {
+            fileStream.remove()
+
+        }
+
+        if (data.typeFile.includes("image")) {
+            containerStream.insertAdjacentHTML('afterbegin', '<img id="fileStream" src="" alt="">');
+
+        } else {
+            containerStream.insertAdjacentHTML('afterbegin', '<video id="fileStream"></video>');
+        }
+
+        fileStream = document.getElementById("fileStream");
+        let file = fileStream;
+        file.style.display = "none";
+
+
+        switch (data.left) {
+            case "left":
+                file.style.left = '0%';
+                file.style.top = '50%';
+                file.style.transform = 'translateX(-0%)';
+                break;
+            case "center":
+                file.style.left = '50%';
+                file.style.top = '50%';
+                file.style.transform = 'translateX(-50%)';
+                break;
+            case "right":
+                file.style.left = '100%';
+                file.style.top = '50%';
+                file.style.transform = 'translateX(-100%)';
+                break;
+            default:
+                // Use the original positioning based on data.left and data.top
+                file.style.left = (data.left * data.ratio) + 'px';
+                file.style.top = (data.top * data.ratio) + 'px';
+                break;
+        }
+
+        switch (data.top) {
+            case "top":
+                file.style.top = '0%';
+                file.style.transform += 'translateY(-0%)';
+                break;
+            case "center":
+                file.style.top = '50%';
+                file.style.transform += 'translateY(-50%)';
+                break;
+            case "bottom":
+                file.style.top = '100%';
+                file.style.transform += 'translateY(-100%)';
+                break;
+            default:
+                // Use the original positioning based on data.left and data.top
+                file.style.left = (data.left * data.ratio) + 'px';
+                file.style.top = (data.top * data.ratio) + 'px';
+                break;
+        }
+
+        file.src = url;
+        file.style.height = (data.height * data.ratio) + 'px';
+        file.style.width = (data.width * data.ratio) + 'px';
+
+        try {
+            console.log(data.muted)
+            file.muted = data.muted === "true" ? true : false;
+            file.currentTime = data.timestamp;
+
+        } catch (e) {
+            console.log("Not a video");
+
+        }
+
+        file.addEventListener('ended', function () {
+            file.remove();
+
+            if (isMovableShowing()) {
+                movable.remove();
+            }
+        });
+
+        file.addEventListener('canplay', function () {
+            $(file).css("display", "inline");
+
+            if (isMovableShowing()) {
+                movable.style.display = "inline";
+            }
+
+            file.play();
+        });
+
+        if (data.typeFile.includes("image")) {
+            //Charger l'image 10 secondes
+            file.addEventListener('load', function () {
+                file.style.display = "inline";
+
+                if (isMovableShowing()) {
+                    movable.style.display = "inline";
+                }
+            });
+            timeout = setTimeout(function () {
+                $(file).remove();
+
+                if (isMovableShowing()) {
+                    movable.remove();
+                }
+            }, 10000);
+        }
+
+    });
+
+    socket.on('text', function (data) {
+        console.log("text")
+        if (isFileShowing()) {
+            fileStream.remove();
+        }
+
+        if (isMovableShowing()) {
+            movable.remove();
+        }
+
+        console.log(data)
+        containerStream.insertAdjacentHTML('beforeend', `<span id="movable">${data.data}</span>`);
+        movable = document.getElementById("movable");
+        console.log(movable)
+        movable.style.wordWrap = "break-word";
+        movable.style.textAlign = "center";
+
+        //pas propre mais ça marche
+
+        switch (data.left) {
+            case "left":
+                movable.style.left = "0%";
+                movable.style.transform = "translateX(-0%)";
+                break;
+            case "center":
+                movable.style.left = "50%";
+                movable.style.transform = "translateX(-50%)";
+                break;
+            case "right":
+                movable.style.left = "100%";
+                movable.style.transform = "translateX(-100%)";
+            default:
+                // Use the original positioning based on data.left and data.top
+                movable.style.left = (data.left * data.ratio) + 'px';
+                movable.style.top = (data.top * data.ratio) + 'px';
+                movable.style.wordWrap = "normal";
+                movable.style.textAlign = "left";
+                break;
+        }
+
+        switch (data.top) {
+            case "top":
+                movable.style.maxWidth = "90%";
+                movable.style.top = '10%';
+                movable.style.transform += 'translateY(-10%)';
+                break;
+            case "center":
+                movable.style.maxWidth = "90%";
+                movable.style.top = '50%';
+                movable.style.transform += 'translateY(-50%)';
+                break;
+            case "bottom":
+                movable.style.maxWidth = "90%";
+                movable.style.top = '90%';
+                movable.style.transform += 'translateY(-90%)';
+                break;
+            default:
+                // Use the original positioning based on data.left and data.top
+                movable.style.left = (data.left * data.ratio) + 'px';
+                movable.style.top = (data.top * data.ratio) + 'px';
+                movable.style.wordWrap = "normal";
+                movable.style.textAlign = "left";
+                break;
+        }
+
+        movable.style.fontSize = (data.font_size * data.ratio) + "pt";
+        movable.style.color = data.font_color;
+        movable.style.fontFamily = data.font_family;
+
+        console.log(data.font_size)
+        console.log(data.ratio)
+
+        //movable.style.fontWeight = "bold";
+        //movable.style.webkitTextStrokeWidth = "3px";
+        //movable.style.webkitTextStrokeColor = "black";
+
+        if (typeof data.haveFile === "boolean") {
+            if (data.haveFile) {
+                movable.style.display = "none";
+            }
+        } else {
+            if (data.haveFile === "true") {
+                movable.style.display = "none";
+            }
+        }
+
+    });
+
+    socket.on('flush', function () {
+        if (isMovableShowing()) {
+            movable.remove();
+        }
+
+        if (isFileShowing()) {
+            fileStream.remove();
+        }
+    });
+
+
+    function isFileShowing() {
+        return fileStream != null;
+    }
+
+    function isMovableShowing() {
+        return movable != undefined && movable != null;
+    }
+</script>

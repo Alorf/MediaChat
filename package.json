@@ -1,0 +1,29 @@
+{
+  "name": "mediachat",
+  "version": "1.0.0",
+  "description": "Mettre des médias sur OBS depuis une source externe",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --trace-warnings index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alorf/MediaChat"
+  },
+  "author": "Alorf",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.2",
+    "discord.js": "^14.11.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.1",
+    "youtube-dl-exec": "^2.4.6"
+  },
+  "devDependencies": {
+    "flowbite": "^1.7.0",
+    "tailwindcss": "^3.3.3"
+  }
+}

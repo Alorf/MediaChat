@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MediaChat</title>
+    <link rel="stylesheet" href="dist/css/output.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+</head>
+
+<body class="bg-gray-800 overflow-x-hidden overflow-y-hidden">
+<div class="flex flex-row justify-between">
+    <div class="w-1/3 px-3 py-2 flex flex-col">
+        <div class="flex items-center justify-center items-center w-full mb-6">
+            <label for="fileToUpload"
+                   class="relative flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                    </svg>
+                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Cliquez
+                                pour envoyer</span>
+                        ou glissez et déposez</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Vidéo, photo de 25mb
+                        maximum</p>
+                </div>
+                <input id="fileToUpload" type="file"
+                       class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"/>
+            </label>
+        </div>
+
+        <div class="mb-6">
+            <label for="mediaLink" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Lien
+                d'un média (instantané, taille illimité)</label>
+            <input type="text" id="mediaLink" placeholder="lien discord, twitter..."
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="mb-6">
+            <label for="txtContent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Votre
+                message</label>
+            <textarea id="txtContent" rows="2"
+                      class="w-full block p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="Ecrivez un texte..."></textarea>
+        </div>
+        <div class="mb-6 flex w-full justify-between items-center">
+            <label for="txtContent" class="block mb-2 font-medium text-gray-900 dark:text-white">Couleur de
+                texte</label>
+            <input type="color" id="colorPicker" value="#ffffff"
+                   class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-0.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="mb-6 flex w-full justify-between items-center">
+            <label class="block mb-2 font-medium text-gray-900 dark:text-white">Police
+                d'écriture</label>
+            <input type="text" id="font" value="Arial"
+                   class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="mb-6 flex w-full justify-between items-center">
+            <label class="block mb-2 font-medium text-gray-900 dark:text-white">Taille</label>
+            <input type="number" id="font-size"
+                   class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   value="28">
+        </div>
+        <div class="mb-6">
+            <form id="streamer-form">
+                <label
+                       class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none"
+                             stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="search" id="streamer"
+                           class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                           placeholder="Le nom du streameur" required>
+                    <button type="submit"
+                            class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="w-full h-full">
+        <div>
+            <div class="h-full">
+                <div id="file-container" class="aspect-video">
+                    <div id="preview"></div>
+                </div>
+            </div>
+            <div class="h-full">
+                <div class="w-full h-16 bg-white border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+                        <button type="button" id="clear"
+                                class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group">
+                            <svg class="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600
+                         dark:group-hover:text-blue-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                 fill="currentColor" viewBox="0 0 18 20">
+                                <path
+                                        d="M17 9a1 1 0 0 0-1 1 6.994 6.994 0 0 1-11.89 5H7a1 1 0 0 0 0-2H2.236a1 1 0 0 0-.585.07c-.019.007-.037.011-.055.018-.018.007-.028.006-.04.014-.028.015-.044.042-.069.06A.984.984 0 0 0 1 14v5a1 1 0 1 0 2 0v-2.32A8.977 8.977 0 0 0 18 10a1 1 0 0 0-1-1ZM2 10a6.994 6.994 0 0 1 11.89-5H11a1 1 0 0 0 0 2h4.768a.992.992 0 0 0 .581-.07c.019-.007.037-.011.055-.018.018-.007.027-.006.04-.014.028-.015.044-.042.07-.06A.985.985 0 0 0 17 6V1a1 1 0 1 0-2 0v2.32A8.977 8.977 0 0 0 0 10a1 1 0 1 0 2 0Z"/>
+                            </svg>
+                            <span
+                                    class="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">Nettoyer</span>
+                        </button>
+                        <button type="button" id="flush"
+                                class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group">
+                            <svg class="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
+                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                 viewBox="0 0 18 20">
+                                <path
+                                        d="M17 4h-4V2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2H1a1 1 0 0 0 0 2h1v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1a1 1 0 1 0 0-2ZM7 2h4v2H7V2Zm1 14a1 1 0 1 1-2 0V8a1 1 0 0 1 2 0v8Zm4 0a1 1 0 0 1-2 0V8a1 1 0 0 1 2 0v8Z"/>
+                            </svg>
+                            <span
+                                    class="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">Flush</span>
+                        </button>
+                        <button type="button" id="envoyer"
+                                class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group">
+                            <svg class="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
+                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                 viewBox="0 0 18 18">
+                                <path
+                                        d="M17 0h-5.768a1 1 0 1 0 0 2h3.354L8.4 8.182A1.003 1.003 0 1 0 9.818 9.6L16 3.414v3.354a1 1 0 0 0 2 0V1a1 1 0 0 0-1-1Z"/>
+                                <path
+                                        d="m14.258 7.985-3.025 3.025A3 3 0 1 1 6.99 6.768l3.026-3.026A3.01 3.01 0 0 1 8.411 2H2.167A2.169 2.169 0 0 0 0 4.167v11.666A2.169 2.169 0 0 0 2.167 18h11.666A2.169 2.169 0 0 0 16 15.833V9.589a3.011 3.011 0 0 1-1.742-1.604Z"/>
+                            </svg>
+                            <span
+                                    class="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">Envoyer</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="toast-interactive"
+     class="hidden fixed flex items-center w-full max-w-xs p-4 space-x-4 text-gray-500 bg-white divide-x divide-gray-200 rounded-lg shadow right-5 bottom-5 dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
+     role="alert">
+    <div class="flex">
+        <div
+                class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:text-blue-300 dark:bg-blue-900">
+            <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clip-rule="evenodd"></path>
+            </svg>
+            <span class="sr-only">Refresh icon</span>
+        </div>
+        <div class="ml-3 text-sm font-normal">
+            <span class="mb-1 text-sm font-semibold text-gray-900 dark:text-white">Avertissement</span>
+            <div id="toast-message" class="mb-2 text-sm font-normal">
+            </div>
+        </div>
+        <button type="button"
+                class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+                data-dismiss-target="#toast-interactive" aria-label="Close">
+            <span class="sr-only">Close</span>
+            <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+<script defer>
+    const toast = document.getElementById('toast-interactive');
+
+    var interval;
+    var isLink;
+
+    const submit = document.getElementById('envoyer');
+    const flush = document.getElementById('flush');
+    const clear = document.getElementById('clear');
+
+    const fileContainer = document.getElementById('file-container');
+    const preview = document.getElementById('preview');
+
+    const streamerForm = document.getElementById('streamer-form');
+    const fileSubmit = document.getElementById('fileToUpload');
+
+    const txtContent = document.getElementById('txtContent');
+    const mediaLink = document.getElementById('mediaLink');
+
+    var ratioMultiplier = 1920 / fileContainer.offsetWidth;
+    var media;
+    var fileToSend;
+    var url;
+    var socket = io();
+
+    fileSubmit.addEventListener('change', function () {
+        isLink = false;
+        preview.style.removeProperty('height');
+        preview.style.removeProperty('width');
+        preview.style.removeProperty('left');
+        preview.style.removeProperty('top');
+
+
+        fileToSend = this.files[0];
+
+        console.log(fileToSend)
+        if (fileToSend === undefined) {
+            return;
+        }
+
+        try {
+            console.log("remove")
+            media.remove();
+            $(preview).resizable("destroy");
+            $(preview).draggable("destroy");
+        } catch (Exception) {
+            console.log(Exception)
+        }
+
+        fileToSend.type.indexOf('image') !== -1 ? preview.insertAdjacentHTML('afterbegin', '<img id="file">') : preview.insertAdjacentHTML('afterbegin', '<video id="file" controls> <source src="" type="video/mp4"> </video>');
+
+
+        media = document.getElementById('file');
+        media.style.display = "none";
+
+        $(preview).resizable({
+            aspectRatio: true, // maintain aspect ratio
+            //handles: 'se', // resize only from the bottom right corner
+            containment: fileContainer
+        });
+
+        $(preview).draggable({
+            containment: fileContainer
+        });
+
+
+        try {
+            url = URL.createObjectURL(fileToSend);
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        media.src = url;
+
+        //Video
+        media.addEventListener('loadedmetadata', function () {
+            media.style.display = "inline";
+
+            console.log(media.clientHeight + " " + media.clientWidth)
+            preview.style.height = (media.clientHeight / 2) + "px";
+            preview.style.width = (media.clientWidth / 2) + "px";
+        });
+
+        //Image
+        media.addEventListener('load', function () {
+            media.style.display = "inline";
+
+            console.log(media.clientHeight + " " + media.clientWidth)
+            preview.style.height = (media.clientHeight / 2) + "px";
+            preview.style.width = (media.clientWidth / 2) + "px";
+
+        });
+    });
+
+
+    mediaLink.addEventListener('change', async function () {
+        fileToSend = this.value;
+        fileToSend = fileToSend.trim();
+
+        if (fileToSend === "") {
+            return;
+        }
+
+        isLink = true;
+
+        //Fetch video url with the url as parameter
+        fileToSend = await fetch("/video-url?url=" + fileToSend, {
+            method: "get",
+        }).then(response => response.text()).then(data => {
+            return JSON.parse(data);
+        }).catch(error => {
+            console.log(error)
+        });
+
+        if (fileToSend['url'] === "none") {
+            writeInToast(fileToSend['message'])
+            return;
+        }
+
+        url = fileToSend['url'];
+
+        if (url === "none") {
+            return;
+        }
+
+        console.log(fileToSend)
+        preview.style.removeProperty('height');
+        preview.style.removeProperty('width');
+        preview.style.removeProperty('left');
+        preview.style.removeProperty('top');
+
+
+        try {
+            console.log("remove")
+            media.remove();
+            $(preview).resizable("destroy");
+            $(preview).draggable("destroy");
+        } catch (Exception) {
+        }
+
+        var isImg = fileToSend['type'].indexOf('png') !== -1;
+        console.log(isImg)
+
+        if (isImg) {
+            console.log("image")
+            preview.insertAdjacentHTML('afterbegin', '<img id="file">');
+
+
+        } else {
+            console.log("video")
+            preview.insertAdjacentHTML('afterbegin', '<video id="file" controls> <source src="" type="video/mp4"> </video>');
+
+        }
+
+
+        media = document.getElementById('file');
+        media.style.display = "none";
+
+        $(preview).resizable({
+            aspectRatio: true, // maintain aspect ratio
+            //handles: 'se', // resize only from the bottom right corner
+            containment: fileContainer
+        });
+
+        $(preview).draggable({
+            containment: fileContainer
+        });
+
+        media.src = url;
+
+        //Video
+        media.addEventListener('loadedmetadata', function () {
+            media.style.display = "inline";
+
+            console.log(media.clientHeight + " " + media.clientWidth)
+            preview.style.height = (media.clientHeight / 2) + "px";
+            preview.style.width = (media.clientWidth / 2) + "px";
+        });
+
+        //Image
+        media.addEventListener('load', function () {
+            media.style.display = "inline";
+
+            console.log(media.clientHeight + " " + media.clientWidth)
+            preview.style.height = (media.clientHeight / 2) + "px";
+            preview.style.width = (media.clientWidth / 2) + "px";
+
+            media.controls = true;
+        });
+    });
+
+    submit.addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        var movable = document.getElementById('movable');
+
+        if (movable != null) {
+            left = movable.style.left.replace("px", "");
+            topo = movable.style.top.replace("px", "");
+            font_size = movable.style.fontSize.replace("pt", "");
+            font_family = movable.style.fontFamily;
+            font_color = movable.style.color;
+
+            console.log(left)
+            console.log(topo)
+            console.log(font_size)
+            console.log(font_family)
+            console.log(font_color)
+
+
+            //$(movable).css("font-weight", "bold");
+            //$(movable).css("-webkit-text-stroke-width", "2px");
+            //$(movable).css("-webkit-text-stroke-color", "black");
+
+            haveFile = fileToSend !== undefined;
+
+            console.log(haveFile)
+
+            socket.emit('text', {
+                data: movable.textContent,
+                left,
+                top: topo,
+                font_size,
+                font_family,
+                font_color,
+                haveFile,
+                ratio: ratioMultiplier,
+            });
+        }
+
+        console.log(media)
+        console.log(fileToSend)
+
+        if (media === undefined) {
+            return;
+        }
+
+        if (fileToSend.size > 25 * 1000000) {
+            writeInToast("Le fichier que vous essayer d'envoyer est trop lourd");
+            return;
+        }
+
+        if (isLink) {
+            console.log("isLink")
+            sendFile(undefined)
+            return;
+        }
+
+        fetch(url).then(function (response) {
+            return response.blob();
+        }).then(function (text) {
+            text.arrayBuffer().then(function (buffer) {
+                //console.log(buffer);
+                sendFile(buffer)
+
+            });
+        });
+    });
+
+    function sendFile(buffer) {
+        width = preview.style.width.replace("px", "");
+
+        height = preview.style.height.replace("px", "");
+
+        left = preview.style.left.replace("px", "");
+
+        topo = preview.style.top.replace("px", "");
+
+        timestamp = media.currentTime;
+        muted = media.muted;
+
+        const formData = new FormData();
+
+        if (isLink) {
+            formData.append("data", url);
+        } else {
+            formData.append("data", Array.from(new Uint8Array(buffer)));
+            formData.append("file", fileToSend);
+        }
+        formData.append("width", width);
+        formData.append("height", height);
+        formData.append("left", left);
+        formData.append("top", topo);
+        formData.append("timestamp", timestamp);
+        formData.append("muted", muted);
+        if (isLink) {
+            var isImg = fileToSend['type'].indexOf('png') !== -1;
+            formData.append("typeFile", isImg ? "image" : "video");
+        } else {
+            formData.append("typeFile", fileToSend.type);
+        }
+        formData.append("ratio", ratioMultiplier);
+        formData.append("isLink", isLink);
+
+
+        (async () => {
+            fetch("sendFile", {
+                body: formData,
+                method: "post"
+            }).then(async function (response) {
+                handleResponse(response)
+            });
+        })();
+
+    }
+
+    const colorPicker = document.getElementById('colorPicker');
+    const fontSizeInput = document.getElementById('font-size');
+    const fontInput = document.getElementById('font');
+
+    txtContent.addEventListener('blur', function () {
+        var movable = document.getElementById('movable');
+
+        //If movable exist, remove it
+        if (movable != null) {
+            movable.remove();
+        }
+
+        fileContainer.insertAdjacentHTML('beforeend', '<span id="movable">texte</span>');
+
+        movable = document.getElementById('movable');
+
+        //Set font-size with the input
+        movable.style.fontSize = fontSizeInput.value + "pt";
+        movable.style.fontFamily = fontInput.value;
+        movable.style.color = colorPicker.value;
+        //movable.style.fontFamily = ["Comic sans ms"]
+
+        $(movable).draggable({
+            grid: [10, 10],
+            containment: "#file-container"
+        });
+
+        movable.innerText = txtContent.value;
+
+    });
+
+    colorPicker.addEventListener('change', function () {
+        var movable = document.getElementById('movable');
+        movable.style.color = colorPicker.value;
+    });
+
+    fontSizeInput.addEventListener('change', function () {
+        var movable = document.getElementById('movable');
+        movable.style.fontSize = fontSizeInput.value + "pt";
+    });
+
+    fontInput.addEventListener('change', function () {
+        var movable = document.getElementById('movable');
+        movable.style.fontFamily = fontInput.value;
+    });
+
+    clear.addEventListener('click', function () {
+        clearScreen();
+    });
+
+    flush.addEventListener('click', function () {
+        socket.emit('flush');
+        clearScreen();
+    });
+
+    function writeInToast(message) {
+        $(toast).removeClass("hidden");
+        $(toast).removeClass("opacity-0")
+        $(toast).find("#toast-message").text(message);
+    }
+
+    async function handleResponse(response) {
+        switch (response.status) {
+            case 501:
+                writeInToast("Le fichier que vous essayer d'envoyer est trop lourd")
+                break;
+        }
+    }
+
+    function clearScreen() {
+        //Delete element inside preview
+        $(preview).resizable("destroy");
+        $(preview).draggable("destroy");
+        while (preview.firstChild) {
+            preview.removeChild(preview.firstChild);
+        }
+
+        preview.removeAttribute("style");
+
+        //remove movable
+        var movable = document.getElementById('movable');
+        if (movable != null) {
+            movable.remove();
+        }
+
+        //reset input file
+        fileToSend = undefined;
+        media = undefined;
+
+    }
+
+    var previousWidth = window.innerWidth;
+
+
+    addEventListener("resize", function () {
+
+        ratioMultiplier = 1920 / fileContainer.offsetWidth;
+
+        /*
+        var currentWidth = window.innerWidth;
+        if (currentWidth !== previousWidth) {
+            // La largeur a changé, cela peut être dû à une réduction ou à une augmentation
+            if (currentWidth < previousWidth) {
+                // La fenêtre est réduite
+                ratioMultiplier = 1920 / fileContainer.offsetWidth;
+                // Réduire la taille de l'aperçu en utilisant ratioMultiplier
+                // Réduire la taille de la police du texte en utilisant ratioMultiplier
+                // Modifier la plage de saisie pour correspondre à la nouvelle taille
+                // Diviser l'aperçu par ratioMultiplier
+                preview.style.width = (media.offsetWidth / ratioMultiplier) + "px";
+                preview.style.height = (media.offsetHeight / ratioMultiplier) + "px";
+            } else {
+                // La fenêtre est agrandie
+                ratioMultiplier = 1920 / fileContainer.offsetWidth;
+                // Augmenter la taille de l'aperçu en utilisant ratioMultiplier
+                // Augmenter la taille de la police du texte en utilisant ratioMultiplier
+                // Modifier la plage de saisie pour correspondre à la nouvelle taille
+                // Multiplier l'aperçu par ratioMultiplier
+                preview.style.width = (preview.offsetWidth * ratioMultiplier) + "px";
+                preview.style.height = (preview.offsetHeight * ratioMultiplier) + "px";
+            }
+
+            // Mettre à jour previousWidth avec la nouvelle valeur de la largeur actuelle
+            previousWidth = currentWidth;
+
+        console.log("ratioMultiplier : " + ratioMultiplier);
+        console.log("preview.offsetWidth : " + preview.offsetWidth);
+
+    }*/
+    });
+
+    streamerForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var streamer = document.getElementById("streamer").value;
+        console.log(streamer);
+
+        const headers = {
+            "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko"
+        };
+
+        const query = `query { user(login: "${streamer}") { stream() { previewImageURL(width: 1920, height: 1080) } } }`;
+
+        const requestOptions = {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({query})
+        };
+
+        fetch("https://gql.twitch.tv/gql", requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                try {
+                    const imageURL = data.data.user.stream.previewImageURL;
+                    fileContainer.style.backgroundImage = `url(${imageURL})`;
+                } catch (e) {
+                    console.log(e);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+
+    });
+</script>
+
+</body>
+
+</html>
