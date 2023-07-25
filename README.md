@@ -62,6 +62,14 @@ Pour déployer le projet, soit vous passez par un VPS pas cher, soit vous l'héb
 - `PORT` : le port sur lequel le serveur va écouter, par défaut `3000`
 - `ENVURL` : l'url du serveur, par défaut `http://localhost:3000`
 
+## Mise en route
+Vous devez avoir nodejs d'installer sur votre machine
+
+La première commande va installer les prérequis
+`npm install`
+
+La seconde commande va démarer le serveur `npm start`
+
 ## Le bot Discord
 Dans le dossier `Discord`, vous avez un fichier `config.json`, vous devez y mettre le `clientId`, le `guildId` et le `token` de votre bot Discord
 # Contact
