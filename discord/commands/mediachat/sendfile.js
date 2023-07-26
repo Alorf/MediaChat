@@ -65,8 +65,6 @@ module.exports = {
             });
         }
 
-        console.log(file.width)
-
         const data = {
             "data": file.url,
             "width": fullscreen == "true" ? "1920" : file.width,
