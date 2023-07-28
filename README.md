@@ -74,7 +74,7 @@ La première commande va installer les prérequis
 La seconde commande va démarrer le serveur `npm start`
 
 ## Le bot Discord
-Dans le dossier `Discord`, vous avez un fichier `config.json`, vous devez y mettre le `clientId`, le `guildId` et le `token` de votre bot Discord
+Dans le dossier `discord`, vous avez un fichier `config.json`, vous devez y mettre le `clientId`, le `guildId` et le `token` de votre bot Discord
 
 Dans le fichier config, vous retrouverez également un champ `role` qui permet de protéger le bot pour les utilisateurs ayant le rôle `MediaChat`
 # Contact
