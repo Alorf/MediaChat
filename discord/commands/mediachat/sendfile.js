@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const axios = require('axios');
 const { ENVURL } = require('../../vars.js');
+const {role} = require("../../vars");
 
 
 module.exports = {
@@ -40,6 +41,13 @@ module.exports = {
             .setDescription('true / false')),
 
     async execute(interaction) {
+
+        if (role){
+            if(!interaction.member.roles.cache.some(role => role.name === 'MediaChat')){
+                return interaction.reply("```Vous n'avez pas la permission d'utiliser cette commande.```", { ephemeral: true });
+            }
+        }
+
         const file = interaction.options.getAttachment('file');
         const positionx = interaction.options.getString('positionx') == null ? "center" : interaction.options.getString('positionx');
         const positiony = interaction.options.getString('positiony') == null ? "center" : interaction.options.getString('positiony');
