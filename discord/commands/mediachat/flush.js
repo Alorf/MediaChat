@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const axios = require('axios');
-const { ENVURL, role } = require('../../vars.js');
-
-
+const { ENVURL, roleCheck } = require('../../vars.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,11 +8,7 @@ module.exports = {
         .setDescription('flush chat'),
     async execute(interaction) {
 
-        if (role){
-            if(!interaction.member.roles.cache.some(role => role.name === 'MediaChat')){
-                return interaction.reply("```Vous n'avez pas la permission d'utiliser cette commande.```", { ephemeral: true });
-            }
-        }
+        if(roleCheck(interaction)) return;
 
         const req = await axios.post(ENVURL + "/flush", {
             headers: {
