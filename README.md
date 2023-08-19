@@ -66,7 +66,7 @@ Pour déployer le projet, soit vous passez par un VPS pas cher, soit vous l'héb
 - `ENVURL` : l'url du serveur, par défaut `http://localhost:3000`
 
 ## Mise en route
-Vous devez avoir nodejs d'installer sur votre machine
+Vous devez avoir nodejs d'installé sur votre machine
 
 La première commande va installer les prérequis
 `npm install`
