@@ -1,6 +1,4 @@
-const PORT = process.env.PORT || 3000;
-const ENVURL = process.env.ENVURL || 'http://localhost:' + PORT;
-const { role } = require('./config.json') || false;
+const { PORT, ENVURL, clientId, guildId, token, role } = require('../vars.js');
 
 function roleCheck(interaction) {
     if (role){
@@ -10,4 +8,4 @@ function roleCheck(interaction) {
     }
 }
 
-module.exports = { PORT, ENVURL, role, roleCheck };
+module.exports = { PORT, ENVURL, role, roleCheck, clientId, guildId, token };

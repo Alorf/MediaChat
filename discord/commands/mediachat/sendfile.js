@@ -38,8 +38,16 @@ module.exports = {
             .setDescription('ratio du fichier'))
         .addStringOption(option => option
             .setName('fullscreen')
+            .setDescription('true / false'))
+        .addStringOption(option => option
+            .setName('anonymous')
+            .setDescription('true / false'))
+        .addStringOption(option => option
+            .setName('timestamp')
+            .setDescription('A partir de quand la vidéo doit être jouée'))
+        .addStringOption(option => option
+            .setName('muted')
             .setDescription('true / false')),
-
     async execute(interaction) {
 
         if(roleCheck(interaction)) return;
@@ -54,6 +62,14 @@ module.exports = {
         const text_font = interaction.options.getString('text_font') ? interaction.options.getString('text_font') : "Arial";
         const text_font_size = interaction.options.getString('text_font_size') ? interaction.options.getString('text_font_size') : "56";
         const fullscreen = interaction.options.getString('fullscreen') == null ? "false" : interaction.options.getString('fullscreen');
+        const anonymous = interaction.options.getString('anonymous') == null ? "false" : interaction.options.getString('anonymous');
+        const timestamp = interaction.options.getString('timestamp') == null ? "0" : interaction.options.getString('timestamp');
+        const muted = interaction.options.getString('muted') == null ? "false" : interaction.options.getString('muted');
+
+        const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
+
+        const author = interactionUser.nickname;
+        const avatar = interaction.member.user.avatarURL();
 
         if (text != undefined || text != null) {
             const data2 = {
@@ -71,15 +87,18 @@ module.exports = {
 
         const data = {
             "data": file.url,
-            "width": fullscreen == "true" ? "1920" : file.width,
-            "height": fullscreen == "true" ? "1080" : file.height,
+            "width": fullscreen == "true" ? "auto" : file.width,
+            "height": fullscreen == "true" ? 1080 : file.height,
             "left": positionx,
             "top": positiony,
-            "timestamp": "0",
-            "muted": "false",
+            "timestamp": timestamp,
+            "muted": muted,
             "ratio": ratio,
             "isLink": "true",
-            "typeFile": file.contentType
+            "typeFile": file.contentType,
+            "anonymous": anonymous,
+            "authorName": author,
+            "authorAvatar": avatar
         };
 
         const req = await axios.post(ENVURL + "/sendFile", data, {

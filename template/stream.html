@@ -1,6 +1,76 @@
 <div id="containerStream"></div>
 
+
+<div id="sender">
+    <img id="author-image" src="">
+    <span id="author-name"></span>
+</div>
+
 <style>
+
+    @keyframes shake {
+        0% {
+            transform: translate(0.5px, 0.5px) rotate(0deg) scale(1.01);
+        }
+        10% {
+            transform: translate(-0.5px, -1px) rotate(-0.5deg) scale(1.02);
+        }
+        20% {
+            transform: translate(-1.5px, 0px) rotate(0.5deg) scale(1.03);
+        }
+        30% {
+            transform: translate(1.5px, 1px) rotate(0deg) scale(1.02);
+        }
+        40% {
+            transform: translate(0.5px, -0.5px) rotate(0.5deg) scale(1.01);
+        }
+        50% {
+            transform: translate(-0.5px, 1px) rotate(-0.5deg) scale(1);
+        }
+        60% {
+            transform: translate(-1.5px, 0.5px) rotate(0deg);
+        }
+        70% {
+            transform: translate(1.5px, 0.5px) rotate(-0.5deg);
+        }
+        80% {
+            transform: translate(-0.5px, -0.5px) rotate(0.5deg);
+        }
+        90% {
+            transform: translate(0.5px, 1px) rotate(0deg);
+        }
+        100% {
+            transform: translate(0.5px, 0px) rotate(-0.5deg);
+        }
+    }
+
+
+    #sender {
+        padding: 1em;
+        width: 200px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+        flex-direction: column;
+    }
+
+    #author-image {
+        animation: shake 4s;
+        animation-iteration-count: infinite;
+
+        border-radius: 50%;
+        border: #0e9f6e 5px solid;
+    }
+
+    #author-name {
+        text-align: center;
+        color: white;
+        font-size: 2.5em;
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    }
+
     #containerStream {
         position: relative;
         width: 1920px;
@@ -19,11 +89,11 @@
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
-    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
-    crossorigin="anonymous"></script>
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossOrigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 
-<script type="text/javascript" charset="utf-8">
+<script type="text/javascript" charSet="utf-8">
     var timeout;
 
     var socket = io();
@@ -32,22 +102,21 @@
     var movable = document.getElementById("movable");
 
     socket.on('connect', function () {
-        socket.emit('msg', { data: 'StreamConnected' });
+        socket.emit('msg', {data: 'StreamConnected'});
 
     });
 
     socket.io.on('reconnect', () => {
-        socket.emit('msg', { data: 'StreamReconnected' });
+        socket.emit('msg', {data: 'StreamReconnected'});
         location.reload();
     })
 
     socket.on('disconnect', function () {
-        socket.emit('msg', { data: 'StreamDisconnected' });
+        socket.emit('msg', {data: 'StreamDisconnected'});
     });
 
     //Get the blob with socket
     socket.on('sendFile', function (data) {
-
         if (timeout != undefined || timeout != 0) {
             clearTimeout(timeout);
         }
@@ -55,15 +124,16 @@
         if (data.isLink == 'false') {
             var blob = new Blob([new Uint8Array(data.data.split(",").map((e) => {
                 return parseInt(e);
-            }))], { type: data.typeFile });
-            console.log(blob);
+            }))], {type: data.typeFile});
             url = URL.createObjectURL(blob);
         } else {
-            url = data.data;
+            //Cors fix
+            url = "/cors?url=" + data.data;
         }
 
         if (isFileShowing()) {
-            fileStream.remove()
+            fileStream.remove();
+            hideAuthor();
 
         }
 
@@ -123,11 +193,15 @@
         }
 
         file.src = url;
+
         file.style.height = (data.height * data.ratio) + 'px';
-        file.style.width = (data.width * data.ratio) + 'px';
+        if (data.width === 'auto') {
+            file.style.width = 'auto';
+        } else {
+            file.style.width = (data.width * data.ratio) + 'px';
+        }
 
         try {
-            console.log(data.muted)
             file.muted = data.muted === "true" ? true : false;
             file.currentTime = data.timestamp;
 
@@ -138,6 +212,7 @@
 
         file.addEventListener('ended', function () {
             file.remove();
+            hideAuthor();
 
             if (isMovableShowing()) {
                 movable.remove();
@@ -147,17 +222,55 @@
         file.addEventListener('canplay', function () {
             $(file).css("display", "inline");
 
+            var audioCtx = new AudioContext();
+            var analyser = audioCtx.createAnalyser();
+            var distortion = audioCtx.createWaveShaper();
+
+            var source = audioCtx.createMediaElementSource(file);
+            audioCtx.resume();
+            source.connect(analyser);
+            analyser.connect(distortion);
+            distortion.connect(audioCtx.destination);
+
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+
+            // Récupérer l'élément à modifier (l'image)
+            var authorImage = document.getElementById("author-image");
+
+            function changeBorder() {
+                analyser.getByteFrequencyData(dataArray);
+
+                // Calculer une valeur moyenne des données de fréquence
+                const averageFrequencyValue = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+
+                // Convertir la valeur de fréquence en une valeur de taille de bordure
+                const borderSizeValue = (averageFrequencyValue / 256) * 150;
+
+                // Appliquer la taille de bordure à l'élément
+                authorImage.style.borderWidth = borderSizeValue + 'px';
+
+                // Appeler la fonction à chaque nouvelle frame d'animation
+                requestAnimationFrame(changeBorder);
+            }
+
+            // Appel initial de la fonction
+            file.play();
+            setAuthor(data)
+            changeBorder();
+
             if (isMovableShowing()) {
                 movable.style.display = "inline";
             }
-
-            file.play();
         });
 
         if (data.typeFile.includes("image")) {
             //Charger l'image 10 secondes
             file.addEventListener('load', function () {
                 file.style.display = "inline";
+                setAuthor(data)
 
                 if (isMovableShowing()) {
                     movable.style.display = "inline";
@@ -165,6 +278,7 @@
             });
             timeout = setTimeout(function () {
                 $(file).remove();
+                hideAuthor();
 
                 if (isMovableShowing()) {
                     movable.remove();
@@ -175,7 +289,6 @@
     });
 
     socket.on('text', function (data) {
-        console.log("text")
         if (isFileShowing()) {
             fileStream.remove();
         }
@@ -184,10 +297,8 @@
             movable.remove();
         }
 
-        console.log(data)
         containerStream.insertAdjacentHTML('beforeend', `<span id="movable">${data.data}</span>`);
         movable = document.getElementById("movable");
-        console.log(movable)
         movable.style.wordWrap = "break-word";
         movable.style.textAlign = "center";
 
@@ -243,12 +354,9 @@
         movable.style.color = data.font_color;
         movable.style.fontFamily = data.font_family;
 
-        console.log(data.font_size)
-        console.log(data.ratio)
-
-        //movable.style.fontWeight = "bold";
-        //movable.style.webkitTextStrokeWidth = "3px";
-        //movable.style.webkitTextStrokeColor = "black";
+        movable.style.fontWeight = "bold";
+        movable.style.webkitTextStrokeWidth = "3px";
+        movable.style.webkitTextStrokeColor = "black";
 
         if (typeof data.haveFile === "boolean") {
             if (data.haveFile) {
@@ -263,6 +371,8 @@
     });
 
     socket.on('flush', function () {
+        hideAuthor();
+
         if (isMovableShowing()) {
             movable.remove();
         }
@@ -279,5 +389,31 @@
 
     function isMovableShowing() {
         return movable != undefined && movable != null;
+    }
+
+    function setAuthor(data) {
+        if (data.anonymous == "false") {
+
+            if (data.width != 'auto' && (data.width < 1920 && data.height < 1080) && !data.typeFile.includes("audio")) {
+                var rect = fileStream.getBoundingClientRect();
+                var x = rect.left - 100;
+                var y = rect.top - 100;
+
+                document.getElementById("sender").style.left = x + "px";
+                document.getElementById("sender").style.top = y + "px";
+            } else {
+                //If sender exceed the screen
+                document.getElementById("sender").style.left = "0px";
+                document.getElementById("sender").style.top = "0px";
+            }
+
+            document.getElementById("author-name").innerHTML = data.authorName;
+            document.getElementById("author-image").src = data.authorAvatar;
+            document.getElementById("sender").style.display = "flex";
+        }
+    }
+
+    function hideAuthor() {
+        document.getElementById("sender").style.display = "none";
     }
 </script>

@@ -215,13 +215,11 @@
 
         fileToSend = this.files[0];
 
-        console.log(fileToSend)
         if (fileToSend === undefined) {
             return;
         }
 
         try {
-            console.log("remove")
             media.remove();
             $(preview).resizable("destroy");
             $(preview).draggable("destroy");
@@ -259,7 +257,6 @@
         media.addEventListener('loadedmetadata', function () {
             media.style.display = "inline";
 
-            console.log(media.clientHeight + " " + media.clientWidth)
             preview.style.height = (media.clientHeight / 2) + "px";
             preview.style.width = (media.clientWidth / 2) + "px";
         });
@@ -268,7 +265,6 @@
         media.addEventListener('load', function () {
             media.style.display = "inline";
 
-            console.log(media.clientHeight + " " + media.clientWidth)
             preview.style.height = (media.clientHeight / 2) + "px";
             preview.style.width = (media.clientWidth / 2) + "px";
 
@@ -306,7 +302,6 @@
             return;
         }
 
-        console.log(fileToSend)
         preview.style.removeProperty('height');
         preview.style.removeProperty('width');
         preview.style.removeProperty('left');
@@ -322,15 +317,12 @@
         }
 
         var isImg = fileToSend['type'].indexOf('png') !== -1;
-        console.log(isImg)
 
         if (isImg) {
-            console.log("image")
             preview.insertAdjacentHTML('afterbegin', '<img id="file">');
 
 
         } else {
-            console.log("video")
             preview.insertAdjacentHTML('afterbegin', '<video id="file" controls> <source src="" type="video/mp4"> </video>');
 
         }
@@ -355,7 +347,6 @@
         media.addEventListener('loadedmetadata', function () {
             media.style.display = "inline";
 
-            console.log(media.clientHeight + " " + media.clientWidth)
             preview.style.height = (media.clientHeight / 2) + "px";
             preview.style.width = (media.clientWidth / 2) + "px";
         });
@@ -364,7 +355,6 @@
         media.addEventListener('load', function () {
             media.style.display = "inline";
 
-            console.log(media.clientHeight + " " + media.clientWidth)
             preview.style.height = (media.clientHeight / 2) + "px";
             preview.style.width = (media.clientWidth / 2) + "px";
 
@@ -384,20 +374,12 @@
             font_family = movable.style.fontFamily;
             font_color = movable.style.color;
 
-            console.log(left)
-            console.log(topo)
-            console.log(font_size)
-            console.log(font_family)
-            console.log(font_color)
-
 
             //$(movable).css("font-weight", "bold");
             //$(movable).css("-webkit-text-stroke-width", "2px");
             //$(movable).css("-webkit-text-stroke-color", "black");
 
             haveFile = fileToSend !== undefined;
-
-            console.log(haveFile)
 
             socket.emit('text', {
                 data: movable.textContent,
@@ -411,9 +393,6 @@
             });
         }
 
-        console.log(media)
-        console.log(fileToSend)
-
         if (media === undefined) {
             return;
         }
@@ -424,7 +403,6 @@
         }
 
         if (isLink) {
-            console.log("isLink")
             sendFile(undefined)
             return;
         }
@@ -433,7 +411,6 @@
             return response.blob();
         }).then(function (text) {
             text.arrayBuffer().then(function (buffer) {
-                //console.log(buffer);
                 sendFile(buffer)
 
             });
@@ -474,6 +451,7 @@
         }
         formData.append("ratio", ratioMultiplier);
         formData.append("isLink", isLink);
+        formData.append("anonymous", true);
 
 
         (async () => {
@@ -621,7 +599,6 @@
     streamerForm.addEventListener("submit", function (event) {
         event.preventDefault();
         var streamer = document.getElementById("streamer").value;
-        console.log(streamer);
 
         const headers = {
             "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko"
@@ -638,7 +615,6 @@
         fetch("https://gql.twitch.tv/gql", requestOptions)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 try {
                     const imageURL = data.data.user.stream.previewImageURL;
                     fileContainer.style.backgroundImage = `url(${imageURL})`;

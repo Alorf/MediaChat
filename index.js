@@ -1,4 +1,6 @@
 const express = require("express");
+const cors = require('cors')
+const stream = require("stream");
 const http = require("http");
 const youtubedl = require("youtube-dl-exec");
 const {Server} = require("socket.io");
@@ -6,18 +8,26 @@ const multer = require("multer");
 const bodyParser = require('body-parser');
 const {client, token} = require('./discord/index.js');
 const {deployCommands} = require('./discord/deploy-commands.js');
+const axios = require("axios");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+const {PORT} = require('./vars.js');
+
+//La limite de taille ne fonctionne pas de la même manière entre windows et linux, un peu inutile donc
 const upload = multer({
-    limits: {fieldSize: 25 * 1024 * 1024},
+    limits: {fieldSize: 25 * 1024 * 1024 * 1024},
 });
 
-const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(express.static(__dirname + "/static"));
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST']
+}));
 
 async function get_mp4_url(url) {
     return new Promise((resolve, reject) => {
@@ -59,6 +69,24 @@ app.get("/video-url", async (req, res) => {
             .status(200)
             .json({url: "none", message: "Veuillez fournir une URL de vidéo."});
     }
+});
+
+app.get("/cors", async (req, res) => {
+    const video_url = req.query.url;
+
+    const response = await axios.get(video_url, { responseType: 'arraybuffer' });
+
+    for (const [key, value] of response.headers) {
+        res.set(key, value);
+    }
+
+    //Axios get arraybuffer
+    let buffer = new Uint8Array(response.data);
+
+    const readStream = new stream.PassThrough();
+    readStream.end(buffer);
+
+    readStream.pipe(res);
 });
 
 app.get("/", (req, res) => {

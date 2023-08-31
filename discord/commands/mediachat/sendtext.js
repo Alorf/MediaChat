@@ -26,7 +26,7 @@ module.exports = {
             .setDescription('font size')),
 
     async execute(interaction) {
-
+        
         if(roleCheck(interaction)) return;
 
         const text = interaction.options.getString('text');

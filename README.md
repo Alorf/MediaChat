@@ -42,6 +42,9 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
   - `text_font_size` : la taille de la police d'écriture du texte, par défaut `56`
   - `ratio` : taille du fichier x ratio => agrandit ou rétrécit le fichier, par défaut `1`
   - `fullscreen` : affiche le fichier en plein écran, par défaut `false`
+  - `anonymous` : affiche le pseudo et l'image de profil de l'envoyeur, par défaut `false`
+  - `timestamp` : indique le moment où le média doit être joué, par défaut `0`
+  - `muted` : indique si le média doit être muet, par défaut `false`
 - `/sendtext` : envoie un texte sur la page stream
   - `text` : le texte à afficher
   - `positionx` : la position en x du texte `left | center | right`, par défaut `center`
@@ -59,11 +62,16 @@ Vous devez configurer OBS en ajoutant une nouvelle page web
 Accessible à `exemple.fr/stream`
 
 # Déploiement
-Pour déployer le projet, soit vous passez par un VPS pas cher, soit vous l'hébergez vous-mêmes ou vous cherchez pour des solutions de déploiement gratuites, mais très limitée (seulement les liens et les textes seront viables)
+Pour déployer le projet, soit vous passez par un VPS pas cher, soit vous l'hébergez vous-mêmes ou vous cherchez pour des solutions de déploiement gratuites, mais très limitée (seulement le bot, les liens et les textes seront viables)
 
 ## Les variables d'environnement
+Vous devez créer un fichier `.env` à la racine du projet, celui-ci contient les variables d'environnement suivantes :
 - `PORT` : le port sur lequel le serveur va écouter, par défaut `3000`
 - `ENVURL` : l'url du serveur, par défaut `http://localhost:3000`
+- `clientId` : l'id du bot Discord
+- `guildId` : l'id du serveur Discord
+- `token` : le token du bot Discord
+- `role` : le rôle à protéger pour le bot Discord, par défaut `false`
 
 ## Mise en route
 Vous devez avoir nodejs d'installé sur votre machine
@@ -71,10 +79,13 @@ Vous devez avoir nodejs d'installé sur votre machine
 La première commande va installer les prérequis
 `npm install`
 
+Configurez le fichier `.env`
+
 La seconde commande va démarrer le serveur `npm start`
 
 ## Le bot Discord
-Dans le dossier `discord`, vous avez un fichier `config.json`, vous devez y mettre le `clientId`, le `guildId` et le `token` de votre bot Discord
+
+Pour utiliser le bot, vous devez créer une application sur le site de Discord, puis créer un bot et récupérer le token, les configurations se font dans le fichier `.env`
 
 Dans le fichier config, vous retrouverez également un champ `role` qui permet de protéger le bot pour les utilisateurs ayant le rôle `MediaChat`
 # Contact
