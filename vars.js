@@ -6,6 +6,7 @@ const clientId = process.env.clientId;
 const guildId = process.env.guildId;
 const token = process.env.token;
 const role = process.env.role || false;
+const sourceName = process.env.sourceName || "mediachat";
 
 module.exports = {
     PORT: PORT,
@@ -13,5 +14,6 @@ module.exports = {
     role: role,
     clientId: clientId,
     guildId: guildId,
-    token: token
+    token: token,
+    sourceName: sourceName
 }

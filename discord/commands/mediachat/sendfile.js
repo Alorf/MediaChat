@@ -28,26 +28,35 @@ module.exports = {
             .setName('text_positiony')
             .setDescription('top / center / bottom'))
         .addStringOption(option => option
+            .setName('text_color')
+            .setDescription('Code hexa de la couleur'))
+        .addStringOption(option => option
             .setName('text_font')
             .setDescription('font'))
-        .addStringOption(option => option
+        .addIntegerOption(option => option
             .setName('text_font_size')
             .setDescription('font size'))
         .addStringOption(option => option
             .setName('ratio')
             .setDescription('ratio du fichier'))
-        .addStringOption(option => option
+        .addBooleanOption(option => option
             .setName('fullscreen')
             .setDescription('true / false'))
-        .addStringOption(option => option
+        .addBooleanOption(option => option
             .setName('anonymous')
             .setDescription('true / false'))
-        .addStringOption(option => option
+        .addIntegerOption(option => option
             .setName('timestamp')
             .setDescription('A partir de quand la vidéo doit être jouée'))
-        .addStringOption(option => option
+        .addBooleanOption(option => option
             .setName('muted')
-            .setDescription('true / false')),
+            .setDescription('true / false'))
+        .addBooleanOption(option => option
+            .setName('greenscreen')
+            .setDescription('true / false'))
+        .addUserOption(option => option
+            .setName('user')
+            .setDescription('Envoyer à un utilisateur')),
     async execute(interaction) {
 
         if(roleCheck(interaction)) return;
@@ -58,23 +67,26 @@ module.exports = {
         const text = interaction.options.getString('text');
         const text_positionx = interaction.options.getString('text_positionx') == null ? "center" : interaction.options.getString('text_positionx');
         const text_positiony = interaction.options.getString('text_positiony') == null ? "bottom" : interaction.options.getString('text_positiony');
-        const ratio = interaction.options.getString('ratio') == null ? "1" : interaction.options.getString('ratio');
+        const text_color = interaction.options.getString('text_color') == null ? "#FFFFFF" : interaction.options.getString('text_color');
+        const ratio = interaction.options.getString('ratio') == null ? 1 : parseFloat(interaction.options.getString('ratio').replace(",", "."));
         const text_font = interaction.options.getString('text_font') ? interaction.options.getString('text_font') : "Arial";
-        const text_font_size = interaction.options.getString('text_font_size') ? interaction.options.getString('text_font_size') : "56";
-        const fullscreen = interaction.options.getString('fullscreen') == null ? "false" : interaction.options.getString('fullscreen');
-        const anonymous = interaction.options.getString('anonymous') == null ? "false" : interaction.options.getString('anonymous');
-        const timestamp = interaction.options.getString('timestamp') == null ? "0" : interaction.options.getString('timestamp');
-        const muted = interaction.options.getString('muted') == null ? "false" : interaction.options.getString('muted');
+        const text_font_size = interaction.options.getInteger('text_font_size') ? interaction.options.getInteger('text_font_size') : "56";
+        const fullscreen = interaction.options.getBoolean('fullscreen') ? interaction.options.getBoolean('fullscreen') : false;
+        const anonymous = interaction.options.getBoolean('anonymous') ? interaction.options.getBoolean('anonymous') : false;
+        const timestamp = interaction.options.getInteger('timestamp') == null ? "0" : interaction.options.getInteger('timestamp');
+        const muted = interaction.options.getBoolean('muted') ? interaction.options.getBoolean('muted') : false;
+        const greenScreen = interaction.options.getBoolean('greenscreen') ? interaction.options.getBoolean('greenscreen') : false;
+        const user = interaction.options.getUser('user');
 
         const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
 
-        const author = interactionUser.nickname;
+        const author = interactionUser.nickname != null ? interactionUser.nickname : interaction.member.user.username;
         const avatar = interaction.member.user.avatarURL();
 
         if (text != undefined || text != null) {
             const data2 = {
                 "data": text, "left": text_positionx, "top": text_positiony, "font_size": text_font_size, "font_family": text_font,
-                "font_color": "#FFFFFF",
+                "font_color": text_color,
                 "haveFile": "true", "ratio": ratio
             }
 
@@ -85,20 +97,25 @@ module.exports = {
             });
         }
 
+        const haveText = text != undefined || text != null;
+
         const data = {
             "data": file.url,
-            "width": fullscreen == "true" ? "auto" : file.width,
-            "height": fullscreen == "true" ? 1080 : file.height,
+            "width": fullscreen ? "auto" : file.width,
+            "height": fullscreen ? 1080 : file.height,
             "left": positionx,
             "top": positiony,
             "timestamp": timestamp,
             "muted": muted,
             "ratio": ratio,
             "isLink": "true",
+            "haveText": haveText,
             "typeFile": file.contentType,
-            "anonymous": anonymous,
+            "anonymous": !greenScreen ? anonymous : true,
             "authorName": author,
-            "authorAvatar": avatar
+            "authorAvatar": avatar,
+            "greenscreen": greenScreen,
+            "user": user != null ? user.username : null
         };
 
         const req = await axios.post(ENVURL + "/sendFile", data, {
@@ -107,6 +124,6 @@ module.exports = {
             }
         });
 
-        return interaction.reply(file.url);
+        return interaction.reply("<@" + interaction.user + "> à envoyé lee fichier " + file.url + " à " + (user != null ? user.username : "tout le monde") + (text != null ? " avec le texte : ```" + text + " ```" : ""));
     },
 };

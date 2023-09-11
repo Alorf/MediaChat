@@ -65,10 +65,20 @@
                    class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    value="28">
         </div>
+        <div class="mb-6 flex w-full justify-between items-center">
+            <label class="block mb-2 font-medium text-gray-900 dark:text-white">Username discord</label>
+            <input type="text" id="username" value=""
+                   class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="mb-6 flex w-full justify-between items-center">
+            <label class="block mb-2 font-medium text-gray-900 dark:text-white">Green screen</label>
+            <input type="checkbox" id="greenscreen"
+                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+        </div>
         <div class="mb-6">
             <form id="streamer-form">
                 <label
-                       class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                        class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none"
@@ -380,8 +390,9 @@
             //$(movable).css("-webkit-text-stroke-color", "black");
 
             haveFile = fileToSend !== undefined;
+            const user = document.getElementById('username');
 
-            socket.emit('text', {
+            data = {
                 data: movable.textContent,
                 left,
                 top: topo,
@@ -390,6 +401,17 @@
                 font_color,
                 haveFile,
                 ratio: ratioMultiplier,
+                user: user.value === "" ? null : user.value
+            }
+
+            fetch("sendText", {
+                body: JSON.stringify(data),
+                method: "post",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(async function (response) {
+                handleResponse(response)
             });
         }
 
@@ -442,7 +464,18 @@
         formData.append("left", left);
         formData.append("top", topo);
         formData.append("timestamp", timestamp);
+
+
+        const user = document.getElementById('username');
+        formData.append("user", user.value === "" ? null : user.value);
+
+
         formData.append("muted", muted);
+
+        const greenscreen = document.getElementById('greenscreen').checked;
+        formData.append("greenscreen", greenscreen);
+
+        console.log(muted)
         if (isLink) {
             var isImg = fileToSend['type'].indexOf('png') !== -1;
             formData.append("typeFile", isImg ? "image" : "video");
@@ -451,6 +484,10 @@
         }
         formData.append("ratio", ratioMultiplier);
         formData.append("isLink", isLink);
+
+        var movable = document.getElementById('movable');
+        formData.append("haveText", movable != undefined && movable != null);
+
         formData.append("anonymous", true);
 
 
@@ -515,8 +552,24 @@
         clearScreen();
     });
 
-    flush.addEventListener('click', function () {
-        socket.emit('flush');
+    flush.addEventListener('click', async function () {
+
+        const user = document.getElementById('username');
+
+        let data = {
+            "user": user.value === "" ? null : user.value
+        }
+
+        fetch("flush", {
+            body: JSON.stringify(data),
+            method: "post",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(async function (response) {
+            console.log(response)
+        });
+
         clearScreen();
     });
 
@@ -536,8 +589,13 @@
 
     function clearScreen() {
         //Delete element inside preview
-        $(preview).resizable("destroy");
-        $(preview).draggable("destroy");
+
+        try {
+            $(preview).resizable("destroy");
+            $(preview).draggable("destroy");
+        } catch (Exception) {
+        }
+
         while (preview.firstChild) {
             preview.removeChild(preview.firstChild);
         }

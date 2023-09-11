@@ -5,18 +5,26 @@ const { ENVURL, roleCheck } = require('../../vars.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('flush')
-        .setDescription('flush chat'),
+        .setDescription('flush chat')
+        .addUserOption(option => option
+            .setName('user')
+            .setDescription('Envoyer à un utilisateur')),
     async execute(interaction) {
+        const user = interaction.options.getUser('user');
+
 
         if(roleCheck(interaction)) return;
 
-        const req = await axios.post(ENVURL + "/flush", {
+        const data = {
+            "user": user != null ? user.username : null
+        }
+
+        const req = await axios.post(ENVURL + "/flush", data, {
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
-        const user = interaction.member.user;
-        return interaction.reply("```" + user.username + " à flush le chat !```");
+        return interaction.reply("<@" + interaction.user + "> à flush le chat de " + (user != null ? user.username : "tout le monde"));
     },
 };

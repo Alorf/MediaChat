@@ -102,14 +102,24 @@ app.post("/sendFile", upload.single("file"), (req, res) => {
     const file = req.file;
 
     if (data.isLink === "true") {
-        io.emit("sendFile", data);
+
+        if (data.user !== undefined && data.user != null) {
+            io.in(data.user).emit("sendFile", data);
+        } else {
+            io.emit("sendFile", data);
+        }
 
         console.log("Fichier envoyé");
 
         res.status(200).send("ok");
     } else {
         if (file && file.buffer.length < 25 * 1000000) {
-            io.emit("sendFile", data);
+
+            if (data.user !== undefined && data.user != null && data.user !== "null") {
+                io.in(data.user).emit("sendFile", data);
+            } else {
+                io.emit("sendFile", data);
+            }
 
             console.log("Fichier envoyé");
 
@@ -123,7 +133,11 @@ app.post("/sendFile", upload.single("file"), (req, res) => {
 app.post("/sendText", (req, res) => {
     const data = req.body;
 
-    io.emit("text", data);
+    if (data.user !== undefined && data.user != null && data.user !== "null") {
+        io.in(data.user).emit("text", data);
+    } else {
+        io.emit("text", data);
+    }
 
     console.log("Texte envoyé");
 
@@ -131,8 +145,13 @@ app.post("/sendText", (req, res) => {
 });
 
 app.post("/flush", (req, res) => {
+    const data = req.body;
 
-    io.emit("flush");
+    if (data.user !== undefined && data.user != null && data.user !== "null") {
+        io.in(data.user).emit("flush");
+    } else {
+        io.emit("flush");
+    }
 
     console.log("Chat vidé");
 
@@ -140,6 +159,16 @@ app.post("/flush", (req, res) => {
 });
 
 io.on("connection", (socket) => {
+
+    socket.on("join", (key) => {
+        socket.join(key);
+    });
+
+    socket.on("leave", (key) => {
+        socket.leave(key);
+    });
+
+
     socket.on("flush", () => {
         io.emit("flush");
     });
