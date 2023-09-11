@@ -326,7 +326,8 @@
         let file = fileStream;
         file.style.display = "none";
 
-        ObsEnableSourceFilter(data.greenscreen === 'true');
+        console.log(data.greenscreen);
+        ObsEnableSourceFilter(data.greenscreen || data.greenscreen === "true");
         //ObsChangeFilterColor(data.greenscreen);
 
         switch (data.left) {
@@ -383,7 +384,7 @@
 
         try {
             //Parse data.muted to bolean
-            data.muted = (data.muted === 'true');
+            data.muted = data.muted || (data.muted === "true");
             file.muted = data.muted;
             console.log(data.muted);
             file.currentTime = data.timestamp;
