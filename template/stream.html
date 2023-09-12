@@ -376,11 +376,8 @@
         file.src = url;
 
         file.style.height = (data.height * data.ratio) + 'px';
-        if (data.width === 'auto') {
-            file.style.width = 'auto';
-        } else {
-            file.style.width = (data.width * data.ratio) + 'px';
-        }
+
+        file.style.width = data.width === 'auto' ? 'auto' : (data.width * data.ratio) + 'px';
 
         try {
             //Parse data.muted to bolean
@@ -584,10 +581,19 @@
                 var x = rect.left - 100;
                 var y = rect.top - 100;
 
+
+                //If sender exceed the screen
+                if (x <= 0 || y <= 0) {
+                    x = 0;
+                    y = 0;
+                }
+
                 document.getElementById("sender").style.left = x + "px";
                 document.getElementById("sender").style.top = y + "px";
+
+                console.log(document.getElementById("sender").style.left)
+                console.log(document.getElementById("sender").style.top)
             } else {
-                //If sender exceed the screen
                 document.getElementById("sender").style.left = "0px";
                 document.getElementById("sender").style.top = "0px";
             }
