@@ -380,11 +380,11 @@
         file.style.width = data.width === 'auto' ? 'auto' : (data.width * data.ratio) + 'px';
 
         try {
-            //Parse data.muted to bolean
-            data.muted = data.muted || (data.muted === "true");
+            //Prob de type
+            data.muted = (data.muted === "true");
             file.muted = data.muted;
             console.log(data.muted);
-            file.currentTime = data.timestamp;
+            file.currentTime = parseInt(data.timestamp);
 
         } catch (e) {
             console.log("Not a video");

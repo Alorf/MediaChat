@@ -69,11 +69,11 @@ module.exports = {
         const text_positiony = interaction.options.getString('text_positiony') == null ? "bottom" : interaction.options.getString('text_positiony');
         const text_color = interaction.options.getString('text_color') == null ? "#FFFFFF" : interaction.options.getString('text_color');
         const ratio = interaction.options.getString('ratio') == null ? 1 : parseFloat(interaction.options.getString('ratio').replace(",", "."));
-        const text_font = interaction.options.getString('text_font') ? interaction.options.getString('text_font') : "Arial";
+        const text_font = interaction.options.getString('text_font') == null ? "Arial" : interaction.options.getString('text_font');
         const text_font_size = interaction.options.getInteger('text_font_size') ? interaction.options.getInteger('text_font_size') : "56";
         const fullscreen = interaction.options.getBoolean('fullscreen') ? interaction.options.getBoolean('fullscreen') : false;
         const anonymous = interaction.options.getBoolean('anonymous') ? interaction.options.getBoolean('anonymous') : false;
-        const timestamp = interaction.options.getInteger('timestamp') == null ? "0" : interaction.options.getInteger('timestamp');
+        const timestamp = interaction.options.getInteger('timestamp') == null ? 0 : interaction.options.getInteger('timestamp');
         const muted = interaction.options.getBoolean('muted') ? interaction.options.getBoolean('muted') : false;
         const greenScreen = interaction.options.getBoolean('greenscreen') ? interaction.options.getBoolean('greenscreen') : false;
         const user = interaction.options.getUser('user');
@@ -102,7 +102,7 @@ module.exports = {
         const data = {
             "data": file.url,
             "width": fullscreen ? "auto" : file.width,
-            "height": fullscreen ? 1080 : file.height,
+            "height": fullscreen || file.height > 1080 ? 1080 : file.height,
             "left": positionx,
             "top": positiony,
             "timestamp": timestamp,
@@ -124,6 +124,6 @@ module.exports = {
             }
         });
 
-        return interaction.reply("<@" + interaction.user + "> à envoyé lee fichier " + file.url + " à " + (user != null ? user.username : "tout le monde") + (text != null ? " avec le texte : ```" + text + " ```" : ""));
+        return interaction.reply("<@" + interaction.user + "> à envoyé le fichier " + file.url + " à " + (user != null ? user.username : "tout le monde") + (text != null ? " avec le texte : ```" + text + " ```" : ""));
     },
 };
