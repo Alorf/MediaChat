@@ -47,6 +47,7 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
   - `muted` : indique si le média doit être muet, par défaut `false`
   - `greenscreen` : indique si le média possède un fond vert, par défaut `false` (Attention, ce paramètre nécessite une configuration supplémentaire d'OBS)
   - `user` : permet d'afficher un média que pour une personne, cela ce fait en mentionnant la personne concernée, par défaut `tout le monde`
+  
 - `/sendtext` : envoie un texte sur la page stream
   - `text` : le texte à afficher
   - `positionx` : la position en x du texte `left | center | right`, par défaut `center`
@@ -57,6 +58,12 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
 
 - `/flush` : vide l'affichage de la page stream
   - `user` : permet de flush que pour une personne, cela ce fait en mentionnant la personne concernée, par défaut `tout le monde`
+  
+- `/setup` : permet de configurer des options du serveur
+  - `queue` : permet d'activer ou désactiver la file d'attente, par défaut `false`
+
+- `/skip` : permet de passer à la vidéo suivante
+  - `user` : permet de skip que pour une personne, cela ce fait en mentionnant la personne concernée, par défaut `tout le monde`
 
 
 # Sur la page Stream
@@ -79,7 +86,7 @@ Vous devez créer un fichier `.env` à la racine du projet, celui-ci contient le
 - `clientId` : l'id du bot Discord
 - `guildId` : l'id du serveur Discord
 - `token` : le token du bot Discord
-- `role` : le rôle à protéger pour le bot Discord, par défaut `false`
+- `role` : le rôle qui protégera pour le bot Discord, par défaut `false`
 - `sourceName` : Le nom de la source OBS qui permettra d'activer / désactiver le fond vert, par défaut `mediachat`
 
 ## Mise en route

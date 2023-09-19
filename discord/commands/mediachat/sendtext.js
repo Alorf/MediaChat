@@ -45,9 +45,11 @@ module.exports = {
 
 
         const data2 = {
-            "data": text, "left": text_positionx, "top": text_positiony, "font_size": font_size, "font_family": font,
-            "font_color": text_color,
-            "haveFile": "false", "ratio": "1",
+            "text": {
+                "data": text, "left": text_positionx, "top": text_positiony, "font_size": font_size, "font_family": font,
+                "font_color": text_color,
+                "haveFile": false, "ratio": "1",
+            },
             "user": user != null ? user.username : null
         }
 

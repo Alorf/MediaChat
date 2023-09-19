@@ -4,7 +4,6 @@ const stream = require("stream");
 const http = require("http");
 const youtubedl = require("youtube-dl-exec");
 const {Server} = require("socket.io");
-const multer = require("multer");
 const bodyParser = require('body-parser');
 const {client, token} = require('./discord/index.js');
 const {deployCommands} = require('./discord/deploy-commands.js');
@@ -16,14 +15,10 @@ const io = new Server(server);
 
 const {PORT} = require('./vars.js');
 
-//La limite de taille ne fonctionne pas de la même manière entre windows et linux, un peu inutile donc
-const upload = multer({
-    limits: {fieldSize: 25 * 1024 * 1024 * 1024},
-});
 
-
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '100mb'}));
 app.use(express.static(__dirname + "/static"));
+app.use("/assets", express.static(__dirname + "/static/dist/assets"));
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST']
@@ -74,7 +69,7 @@ app.get("/video-url", async (req, res) => {
 app.get("/cors", async (req, res) => {
     const video_url = req.query.url;
 
-    const response = await axios.get(video_url, { responseType: 'arraybuffer' });
+    const response = await axios.get(video_url, {responseType: 'arraybuffer'});
 
     for (const [key, value] of response.headers) {
         res.set(key, value);
@@ -90,16 +85,15 @@ app.get("/cors", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/template/upload.html");
+    res.sendFile(__dirname + "/static/dist/index.html");
 });
 
 app.get("/stream", (req, res) => {
     res.sendFile(__dirname + "/template/stream.html");
 });
 
-app.post("/sendFile", upload.single("file"), (req, res) => {
+app.post("/sendFile", (req, res) => {
     const data = req.body;
-    const file = req.file;
 
     if (data.isLink === "true") {
 
@@ -113,10 +107,11 @@ app.post("/sendFile", upload.single("file"), (req, res) => {
 
         res.status(200).send("ok");
     } else {
-        if (file && file.buffer.length < 25 * 1000000) {
+        if (data.fileSize < 25 * 1000000) {
 
             if (data.user !== undefined && data.user != null && data.user !== "null") {
                 io.in(data.user).emit("sendFile", data);
+
             } else {
                 io.emit("sendFile", data);
             }
@@ -158,7 +153,37 @@ app.post("/flush", (req, res) => {
     res.status(200).send("ok");
 });
 
+
+app.post("/skip", (req, res) => {
+    const data = req.body;
+
+    if (data.user !== undefined && data.user != null && data.user !== "null") {
+        io.in(data.user).emit("skip");
+    } else {
+        io.emit("skip");
+    }
+
+    console.log("média skip");
+
+    res.status(200).send("ok");
+});
+
+let isQueue = false;
+
+app.post("/setup", (req, res) => {
+    const data = req.body;
+    isQueue = data.queue;
+
+    io.emit("setup", data);
+
+    console.log("Setup envoyé");
+
+    res.status(200).send("ok");
+});
+
 io.on("connection", (socket) => {
+
+    socket.emit("setup", {queue: isQueue});
 
     socket.on("join", (key) => {
         socket.join(key);
@@ -166,15 +191,6 @@ io.on("connection", (socket) => {
 
     socket.on("leave", (key) => {
         socket.leave(key);
-    });
-
-
-    socket.on("flush", () => {
-        io.emit("flush");
-    });
-
-    socket.on("text", (data) => {
-        io.emit("text", data);
     });
 });
 

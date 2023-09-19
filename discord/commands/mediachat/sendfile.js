@@ -83,26 +83,13 @@ module.exports = {
         const author = interactionUser.nickname != null ? interactionUser.nickname : interaction.member.user.username;
         const avatar = interaction.member.user.avatarURL();
 
-        if (text != undefined || text != null) {
-            const data2 = {
-                "data": text, "left": text_positionx, "top": text_positiony, "font_size": text_font_size, "font_family": text_font,
-                "font_color": text_color,
-                "haveFile": "true", "ratio": ratio
-            }
-
-            const req = await axios.post(ENVURL + "/sendText", data2, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        }
-
         const haveText = text != undefined || text != null;
 
         const data = {
             "data": file.url,
-            "width": fullscreen ? "auto" : file.width,
-            "height": fullscreen || file.height > 1080 ? 1080 : file.height,
+            "fullscreen": fullscreen,
+            "width": fullscreen || file.height < 720 ? "auto" : file.width,
+            "height": fullscreen || file.height > 1080 ? 1080 : file.height < 720 ? 720 : file.height,
             "left": positionx,
             "top": positiony,
             "timestamp": timestamp,
@@ -115,7 +102,12 @@ module.exports = {
             "authorName": author,
             "authorAvatar": avatar,
             "greenscreen": greenScreen,
-            "user": user != null ? user.username : null
+            "user": user != null ? user.username : null,
+            "text": {
+                "data": text, "left": text_positionx, "top": text_positiony, "font_size": text_font_size, "font_family": text_font,
+                "font_color": text_color,
+                "haveFile": true, "ratio": ratio
+            }
         };
 
         const req = await axios.post(ENVURL + "/sendFile", data, {

@@ -1,13 +1,4 @@
-<div id="containerStream"></div>
-
-
-<div id="sender">
-    <img id="author-image" src="">
-    <span id="author-name"></span>
-</div>
-
 <style>
-
     @keyframes shake {
         0% {
             transform: translate(0.5px, 0.5px) rotate(0deg) scale(1.01);
@@ -77,22 +68,37 @@
         height: 1080px;
     }
 
-    #movable,
-    .movable {
+    #moveable {
         position: absolute;
+        overflow-wrap: anywhere;
         /* text wrap */
-        width: 100%;
+        display: none;
+        z-index: 99;
+        line-height: 100%;
     }
 
-    #fileStream {
+    #imageStream, #videoStream {
         position: absolute;
+        display: none;
     }
+
 </style>
+
+<div id="containerStream">
+    <video id="videoStream"></video>
+    <img id="imageStream" src="" alt="">
+    <span id="moveable"></span>
+</div>
+
+
+<div id="sender">
+    <img id="author-image" src="">
+    <span id="author-name"></span>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
         integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
         crossOrigin="anonymous"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 
 <script type="text/javascript" charSet="utf-8">
     let obsWebSocket;
@@ -146,7 +152,6 @@
 
         obsWebSocket.addEventListener('close', () => {
             console.log('Connection to OBS WebSocket closed');
-            addFilterButton.setAttribute('disabled', true);
         });
 
         setTimeout(() => {
@@ -265,16 +270,282 @@
     //Get key parameter
     let key = new URLSearchParams(window.location.search).get('key');
 
-    var timeout;
-
+    var isQueue = true;
+    var queue = [];
     var socket = io();
-    const containerStream = document.getElementById("containerStream");
-    var fileStream = document.getElementById("fileStream");
-    var movable = document.getElementById("movable");
+    var timeout;
+    var _data;
+
+    const moveable = document.getElementById("moveable");
+    const videoStream = document.getElementById("videoStream");
+    const imageStream = document.getElementById("imageStream");
+
+    moveable.style.display = "none";
+    videoStream.style.display = "none";
+    imageStream.style.display = "none";
+
+    function showText(data) {
+        data = data.text;
+
+        moveable.innerHTML = data.data;
+
+        moveablePosition(data);
+
+        moveable.style.fontSize = (data.font_size * data.ratio) + "px";
+        moveable.style.color = data.font_color;
+        moveable.style.fontFamily = data.font_family;
+
+
+        moveable.style.fontWeight = "bold";
+        moveable.style.webkitTextStrokeWidth = "3px";
+        moveable.style.webkitTextStrokeColor = "black";
+
+
+        if (data.haveFile) {
+            moveable.style.display = "none";
+        } else {
+            moveable.style.display = "inline";
+
+            timeout = setTimeout(function () {
+                hideAuthor();
+                hideFile();
+                moveable.style.display = "none";
+
+                nextMedia();
+            }, 10000);
+        }
+    }
+
+    function moveablePosition(data) {
+        switch (data.left) {
+            case "left":
+                moveable.style.left = "0%";
+                moveable.style.transform = "translateX(-0%)";
+                break;
+            case "center":
+                moveable.style.left = "50%";
+                moveable.style.transform = "translateX(-50%)";
+                break;
+            case "right":
+                moveable.style.left = "100%";
+                moveable.style.transform = "translateX(-100%)";
+                break;
+            default:
+                // Use the original positioning based on data.left and data.top
+                moveable.style.left = (data.left * data.ratio) + 'px';
+                break;
+        }
+
+        switch (data.top) {
+            case "top":
+                moveable.style.maxWidth = "90%";
+                moveable.style.top = '5%';
+                moveable.style.transform += 'translateY(-5%)';
+                break;
+            case "center":
+                moveable.style.maxWidth = "90%";
+                moveable.style.top = '50%';
+                moveable.style.transform += 'translateY(-50%)';
+                break;
+            case "bottom":
+                moveable.style.maxWidth = "90%";
+                moveable.style.top = '95%';
+                moveable.style.transform += 'translateY(-95%)';
+                break;
+            default:
+                // Use the original positioning based on data.left and data.top
+                moveable.style.top = (data.top * data.ratio) + 'px';
+                break;
+        }
+    }
+
+    function nextMedia() {
+        if (!isQueue) {
+            return;
+        }
+        let next = queue.shift();
+
+        console.log("NEXT");
+        console.log(next);
+
+        if (next === undefined) {
+            return;
+        }
+
+        if (next.text.haveFile) {
+            showMedia(next);
+        } else {
+            showText(next);
+        }
+    }
+
+    function showMedia(data) {
+        if (!data.isLink) {
+            //Create uint8array with data.data
+            var uint8array = new Uint8Array(data.data);
+
+            var blob = new Blob([uint8array], {type: data.typeFile});
+            console.log("blob", blob)
+            url = URL.createObjectURL(blob);
+        } else {
+            //Cors fix
+            url = "/cors?url=" + data.data;
+        }
+
+        ObsEnableSourceFilter(data.greenscreen || data.greenscreen === "true");
+
+        _data = data;
+
+        if (data.typeFile.includes("image")) {
+            imageStream.src = url;
+
+            filePosition(data, imageStream);
+
+            timeout = setTimeout(function () {
+                hideAuthor();
+                hideFile();
+                moveable.style.display = "none";
+
+                nextMedia();
+            }, 10000);
+        } else {
+            videoStream.src = url;
+
+            filePosition(data, videoStream);
+
+            data.muted = (data.muted === "true");
+            videoStream.muted = data.muted;
+            videoStream.currentTime = parseInt(data.timestamp);
+        }
+    }
+
+    //Charger l'image 10 secondes
+    imageStream.addEventListener('load', function () {
+        if (_data.text.data != "") {
+            showText(_data);
+        }
+
+        imageStream.style.display = "inline";
+        moveable.style.display = "inline";
+
+        setAuthor(_data, imageStream)
+    });
+
+    var audioCtx = new AudioContext();
+    var analyser = audioCtx.createAnalyser();
+    var distortion = audioCtx.createWaveShaper();
+    var source = audioCtx.createMediaElementSource(videoStream);
+
+    source.connect(analyser);
+    analyser.connect(distortion);
+    distortion.connect(audioCtx.destination);
+
+    videoStream.addEventListener('canplay', function () {
+        videoStream.style.display = "inline";
+
+        audioCtx.resume();
+
+        analyser.fftSize = 256;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        // Récupérer l'élément à modifier (l'image)
+        var authorImage = document.getElementById("author-image");
+
+        function changeBorder() {
+            analyser.getByteFrequencyData(dataArray);
+
+            // Calculer une valeur moyenne des données de fréquence
+            const averageFrequencyValue = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+
+            // Convertir la valeur de fréquence en une valeur de taille de bordure
+            const borderSizeValue = (averageFrequencyValue / 256) * 50;
+
+            // Appliquer la taille de bordure à l'élément
+            authorImage.style.borderWidth = (borderSizeValue === 0 ? 5 : borderSizeValue) + 'px';
+
+            // Appeler la fonction à chaque nouvelle frame d'animation
+            requestAnimationFrame(changeBorder);
+        }
+
+        if (_data.text.data != "") {
+            showText(_data);
+        }
+        videoStream.play();
+        moveable.style.display = "inline";
+        setAuthor(_data, videoStream)
+        changeBorder();
+    });
+
+    videoStream.addEventListener('ended', function () {
+        hideAuthor();
+        hideFile();
+        moveable.style.display = "none";
+        audioCtx.suspend();
+
+        nextMedia();
+    });
+
+    function filePosition(data, selector) {
+
+        console.log(data)
+
+        selector.style.height = (data.height * data.ratio) + 'px';
+        selector.style.width = data.width === 'auto' ? 'auto' : (data.width * data.ratio) + 'px';
+
+        console.log(data.height, data.width)
+
+        switch (data.left) {
+            case "left":
+                selector.style.left = '0%';
+                selector.style.transform = 'translateX(-0%)';
+                break;
+            case "center":
+                selector.style.left = '50%';
+                selector.style.transform = 'translateX(-50%)';
+                break;
+            case "right":
+                selector.style.left = '100%';
+                selector.style.transform = 'translateX(-100%)';
+                break;
+            default:
+                selector.style.transform = 'translateX(0%)';
+                selector.style.left = (data.left * data.ratio) + 'px';
+                break;
+        }
+
+        switch (data.top) {
+            case "top":
+                selector.style.top = '0%';
+                selector.style.transform += 'translateY(-0%)';
+                break;
+            case "center":
+                selector.style.top = '50%';
+                selector.style.transform += 'translateY(-50%)';
+                break;
+            case "bottom":
+                selector.style.top = '100%';
+                selector.style.transform += 'translateY(-100%)';
+                break;
+            default:
+                selector.style.transform += 'translateY(0%)';
+                selector.style.top = (data.top * data.ratio) + 'px';
+                break;
+        }
+
+        console.log(selector.style.top, selector.style.left)
+    }
 
     socket.on('connect', function () {
         socket.emit('msg', {data: 'StreamConnected'});
         socket.emit('join', key);
+    });
+
+    socket.on('setup', function (data) {
+        console.log(data);
+        isQueue = data.queue;
+        console.log("isQueue : ", isQueue);
     });
 
     socket.io.on('reconnect', () => {
@@ -287,297 +558,78 @@
         socket.emit('leave', key);
     });
 
-    //Get the blob with socket
     socket.on('sendFile', function (data) {
-        if (timeout != undefined || timeout != 0) {
+
+        if (isQueue) {
+            queue.push(data);
+
+            if (!isMediaShowing()) {
+                nextMedia();
+            }
+        } else {
+            hideAuthor();
+            showMedia(data)
+        }
+
+    });
+
+    socket.on('skip', function () {
+        if (isQueue) {
             clearTimeout(timeout);
-        }
-
-        if(!data.haveText){
-            if (isMovableShowing()) {
-                movable.remove();
-            }
-        }
-
-        if (data.isLink === 'false') {
-            var blob = new Blob([new Uint8Array(data.data.split(",").map((e) => {
-                return parseInt(e);
-            }))], {type: data.typeFile});
-            url = URL.createObjectURL(blob);
-        } else {
-            //Cors fix
-            url = "/cors?url=" + data.data;
-        }
-
-        if (isFileShowing()) {
-            fileStream.remove();
             hideAuthor();
-
+            hideFile();
+            moveable.style.display = "none";
+            nextMedia();
         }
-
-        if (data.typeFile.includes("image")) {
-            containerStream.insertAdjacentHTML('afterbegin', '<img id="fileStream" src="" alt="">');
-
-        } else {
-            containerStream.insertAdjacentHTML('afterbegin', '<video id="fileStream"></video>');
-        }
-
-        fileStream = document.getElementById("fileStream");
-        let file = fileStream;
-        file.style.display = "none";
-
-        console.log(data.greenscreen);
-        ObsEnableSourceFilter(data.greenscreen || data.greenscreen === "true");
-        //ObsChangeFilterColor(data.greenscreen);
-
-        switch (data.left) {
-            case "left":
-                file.style.left = '0%';
-                file.style.top = '50%';
-                file.style.transform = 'translateX(-0%)';
-                break;
-            case "center":
-                file.style.left = '50%';
-                file.style.top = '50%';
-                file.style.transform = 'translateX(-50%)';
-                break;
-            case "right":
-                file.style.left = '100%';
-                file.style.top = '50%';
-                file.style.transform = 'translateX(-100%)';
-                break;
-            default:
-                // Use the original positioning based on data.left and data.top
-                file.style.left = (data.left * data.ratio) + 'px';
-                file.style.top = (data.top * data.ratio) + 'px';
-                break;
-        }
-
-        switch (data.top) {
-            case "top":
-                file.style.top = '0%';
-                file.style.transform += 'translateY(-0%)';
-                break;
-            case "center":
-                file.style.top = '50%';
-                file.style.transform += 'translateY(-50%)';
-                break;
-            case "bottom":
-                file.style.top = '100%';
-                file.style.transform += 'translateY(-100%)';
-                break;
-            default:
-                // Use the original positioning based on data.left and data.top
-                file.style.left = (data.left * data.ratio) + 'px';
-                file.style.top = (data.top * data.ratio) + 'px';
-                break;
-        }
-
-        file.src = url;
-
-        file.style.height = (data.height * data.ratio) + 'px';
-
-        file.style.width = data.width === 'auto' ? 'auto' : (data.width * data.ratio) + 'px';
-
-        try {
-            //Prob de type
-            data.muted = (data.muted === "true");
-            file.muted = data.muted;
-            console.log(data.muted);
-            file.currentTime = parseInt(data.timestamp);
-
-        } catch (e) {
-            console.log("Not a video");
-
-        }
-
-        file.addEventListener('ended', function () {
-            file.remove();
-            hideAuthor();
-
-            if (isMovableShowing()) {
-                movable.remove();
-            }
-        });
-
-        file.addEventListener('canplay', function () {
-            $(file).css("display", "inline");
-
-            var audioCtx = new AudioContext();
-            var analyser = audioCtx.createAnalyser();
-            var distortion = audioCtx.createWaveShaper();
-
-            var source = audioCtx.createMediaElementSource(file);
-            audioCtx.resume();
-            source.connect(analyser);
-            analyser.connect(distortion);
-            distortion.connect(audioCtx.destination);
-
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-
-            // Récupérer l'élément à modifier (l'image)
-            var authorImage = document.getElementById("author-image");
-
-            function changeBorder() {
-                analyser.getByteFrequencyData(dataArray);
-
-                // Calculer une valeur moyenne des données de fréquence
-                const averageFrequencyValue = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-
-                // Convertir la valeur de fréquence en une valeur de taille de bordure
-                const borderSizeValue = (averageFrequencyValue / 256) * 50;
-
-                // Appliquer la taille de bordure à l'élément
-                authorImage.style.borderWidth = borderSizeValue + 'px';
-
-                // Appeler la fonction à chaque nouvelle frame d'animation
-                requestAnimationFrame(changeBorder);
-            }
-
-            // Appel initial de la fonction
-            file.play();
-            setAuthor(data)
-            changeBorder();
-
-            if (isMovableShowing()) {
-                movable.style.display = "inline";
-            }
-        });
-
-        if (data.typeFile.includes("image")) {
-            //Charger l'image 10 secondes
-            file.addEventListener('load', function () {
-                file.style.display = "inline";
-                setAuthor(data)
-
-                if (isMovableShowing()) {
-                    movable.style.display = "inline";
-                }
-            });
-            timeout = setTimeout(function () {
-                $(file).remove();
-                hideAuthor();
-
-                if (isMovableShowing()) {
-                    movable.remove();
-                }
-            }, 10000);
-        }
-
     });
 
     socket.on('text', function (data) {
-        if (isFileShowing()) {
-            fileStream.remove();
-        }
+        if (isQueue) {
+            queue.push(data);
 
-        if (isMovableShowing()) {
-            movable.remove();
-        }
-
-        containerStream.insertAdjacentHTML('beforeend', `<span id="movable">${data.data}</span>`);
-        movable = document.getElementById("movable");
-        movable.style.wordWrap = "break-word";
-        movable.style.textAlign = "center";
-
-        //pas propre mais ça marche
-
-        switch (data.left) {
-            case "left":
-                movable.style.left = "0%";
-                movable.style.transform = "translateX(-0%)";
-                break;
-            case "center":
-                movable.style.left = "50%";
-                movable.style.transform = "translateX(-50%)";
-                break;
-            case "right":
-                movable.style.left = "100%";
-                movable.style.transform = "translateX(-100%)";
-                break;
-            default:
-                // Use the original positioning based on data.left and data.top
-                movable.style.left = (data.left * data.ratio) + 'px';
-                movable.style.top = (data.top * data.ratio) + 'px';
-                movable.style.wordWrap = "normal";
-                movable.style.textAlign = "left";
-                break;
-        }
-
-        switch (data.top) {
-            case "top":
-                movable.style.maxWidth = "90%";
-                movable.style.top = '5%';
-                movable.style.transform += 'translateY(-5%)';
-                break;
-            case "center":
-                movable.style.maxWidth = "90%";
-                movable.style.top = '50%';
-                movable.style.transform += 'translateY(-50%)';
-                break;
-            case "bottom":
-                movable.style.maxWidth = "90%";
-                movable.style.top = '95%';
-                movable.style.transform += 'translateY(-95%)';
-                break;
-            default:
-                // Use the original positioning based on data.left and data.top
-                movable.style.left = (data.left * data.ratio) + 'px';
-                movable.style.top = (data.top * data.ratio) + 'px';
-                movable.style.wordWrap = "normal";
-                movable.style.textAlign = "left";
-                break;
-        }
-
-        movable.style.fontSize = (data.font_size * data.ratio) + "pt";
-        movable.style.color = data.font_color;
-        movable.style.fontFamily = data.font_family;
-
-        movable.style.fontWeight = "bold";
-        movable.style.webkitTextStrokeWidth = "3px";
-        movable.style.webkitTextStrokeColor = "black";
-
-        if (typeof data.haveFile === "boolean") {
-            if (data.haveFile) {
-                movable.style.display = "none";
+            if (!isMediaShowing()) {
+                nextMedia();
             }
         } else {
-            if (data.haveFile === "true") {
-                movable.style.display = "none";
-            }
+            hideAuthor();
+            showText(data);
         }
 
     });
+
+    function isMediaShowing() {
+        return videoStream.style.display !== "none" || imageStream.style.display !== "none";
+    }
 
     socket.on('flush', function () {
+        queue.length = 0;
         hideAuthor();
-
-        if (isMovableShowing()) {
-            movable.remove();
-        }
-
-        if (isFileShowing()) {
-            fileStream.remove();
-        }
+        hideFile();
+        moveable.style.display = "none";
     });
 
+    function hideFile() {
+        //unload videoStream url
+        videoStream.src = "";
+        videoStream.style.display = "none";
 
-    function isFileShowing() {
-        return fileStream != null;
+        imageStream.src = "";
+        imageStream.style.display = "none";
     }
 
-    function isMovableShowing() {
-        return movable != undefined && movable != null;
+    function ismoveableShowing() {
+        return moveable.style.display !== "inline";
     }
 
-    function setAuthor(data) {
+    function setAuthor(data, selector) {
+
+        const sender = document.getElementById("sender");
+        console.log("ANONYMOUS : ", data.anonymous);
         if (!data.anonymous) {
 
-            if (data.width !== 'auto' && (data.width < 1920 && data.height < 1080) && !data.typeFile.includes("audio")) {
-                var rect = fileStream.getBoundingClientRect();
+            if (!data.fullscreen && !data.typeFile.includes("audio")) {
+                //if media is not in fullscreen mode
+                var rect = selector.getBoundingClientRect();
                 var x = rect.left - 100;
                 var y = rect.top - 100;
 
@@ -588,23 +640,24 @@
                     y = 0;
                 }
 
-                document.getElementById("sender").style.left = x + "px";
-                document.getElementById("sender").style.top = y + "px";
-
-                console.log(document.getElementById("sender").style.left)
-                console.log(document.getElementById("sender").style.top)
+                sender.style.left = x + "px";
+                sender.style.top = y + "px";
             } else {
-                document.getElementById("sender").style.left = "0px";
-                document.getElementById("sender").style.top = "0px";
+                sender.style.left = "0px";
+                sender.style.top = "0px";
             }
+            const authorName = document.getElementById("author-name");
+            const authorImage = document.getElementById("author-image");
 
-            document.getElementById("author-name").innerHTML = data.authorName;
-            document.getElementById("author-image").src = data.authorAvatar;
-            document.getElementById("sender").style.display = "flex";
+            authorName.innerHTML = data.authorName;
+            authorImage.src = data.authorAvatar;
+            sender.style.display = "flex";
         }
     }
 
     function hideAuthor() {
-        document.getElementById("sender").style.display = "none";
+        const sender = document.getElementById("sender");
+
+        sender.style.display = "none";
     }
 </script>
