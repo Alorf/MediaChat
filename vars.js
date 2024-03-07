@@ -1,11 +1,13 @@
 const dotenv = require('dotenv');
+const fs = require('fs');
 
-try {
+if (fs.existsSync('.env.local')) {
     console.log("Loading .env.local");
     dotenv.config({ path: '.env.local' });
-} catch (err) {
+} else {
     console.log('.env.local file not found, skipping');
 }
+
 
 dotenv.config();
 
