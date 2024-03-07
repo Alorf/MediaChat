@@ -1,4 +1,13 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+try {
+    console.log("Loading .env.local");
+    dotenv.config({ path: '.env.local' });
+} catch (err) {
+    console.log('.env.local file not found, skipping');
+}
+
+dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const ENVURL = process.env.ENVURL || "http://localhost:3000";

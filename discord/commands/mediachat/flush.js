@@ -16,13 +16,14 @@ module.exports = {
         if(roleCheck(interaction)) return;
 
         const data = {
-            "user": user != null ? user.username : null
+            "user": user != null ? user.username : undefined
         }
 
-        const req = await axios.post(ENVURL + "/flush", data, {
+
+        await axios.post(ENVURL + "/flush", data, {
             headers: {
-                'Content-Type': 'application/json'
-            }
+                "Content-Type": "application/json",
+            },
         });
 
         return interaction.reply("<@" + interaction.user + "> à flush le chat de " + (user != null ? user.username : "tout le monde"));

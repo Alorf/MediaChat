@@ -37,7 +37,7 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
   - `positiony` : la position en y du fichier `top | center | bottom`, par défaut `center`
   - `text` : le texte à afficher
   - `text_positionx` : la position en x du texte `left | center | right`, par défaut `center`
-  - `text_positiony` : la position en y du texte `top | center | bottom`, par défaut `center`
+  - `text_positiony` : la position en y du texte `top | center | bottom`, par défaut `bottom`
   - `text_font` : la police d'écriture du texte, par défaut `Arial`
   - `text_font_size` : la taille de la police d'écriture du texte, par défaut `56`
   - `ratio` : taille du fichier x ratio => agrandit ou rétrécit le fichier, par défaut `1`
@@ -86,7 +86,7 @@ Vous devez créer un fichier `.env` à la racine du projet, celui-ci contient le
 - `clientId` : l'id du bot Discord
 - `guildId` : l'id du serveur Discord
 - `token` : le token du bot Discord
-- `role` : le rôle qui protégera pour le bot Discord, par défaut `false`
+- `role` : activer ou désactiver le rôle préalablement créer "`mediachat`" pour envoyer des médias, par défaut `false`
 - `sourceName` : Le nom de la source OBS qui permettra d'activer / désactiver le fond vert, par défaut `mediachat`
 
 ## Mise en route
