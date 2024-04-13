@@ -1,0 +1,3 @@
+[submodule "ReactMediaChat"]
+	path = ReactMediaChat
+	url = https://github.com/Alorf/React-MediaChat

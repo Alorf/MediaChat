@@ -1,6 +1,6 @@
 {
   "name": "mediachat",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mettre des médias sur OBS depuis une source externe",
   "main": "index.js",
   "scripts": {
