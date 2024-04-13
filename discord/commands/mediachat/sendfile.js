@@ -45,6 +45,9 @@ module.exports = {
         .addStringOption(option => option
             .setName('ratio')
             .setDescription('ratio du fichier'))
+        .addNumberOption(option => option
+            .setName('duration')
+            .setDescription('durée d\'affichage de l\'image'))
         .addBooleanOption(option => option
             .setName('fullscreen')
             .setDescription('true / false'))
@@ -75,6 +78,7 @@ module.exports = {
         const text_positionx = interaction.options.getString('text_positionx') == null ? "center" : interaction.options.getString('text_positionx');
         const text_positiony = interaction.options.getString('text_positiony') == null ? "bottom" : interaction.options.getString('text_positiony');
         const text_color = interaction.options.getString('text_color') == null ? "#FFFFFF" : interaction.options.getString('text_color');
+        const duration = interaction.options.getNumber('duration') ?? 10;
         const ratio = interaction.options.getString('ratio') == null ? 1 : parseFloat(interaction.options.getString('ratio').replace(",", "."));
         const text_font = interaction.options.getString('text_font') == null ? "Arial" : interaction.options.getString('text_font');
         const text_font_size = interaction.options.getInteger('text_font_size') ? interaction.options.getInteger('text_font_size') : "100";
@@ -120,6 +124,7 @@ module.exports = {
                 file.height < 720 ? "auto" : file.width,
                 file.height > 1080 ? 1080 : file.height < 720 ? 720 : file.height,
                 fullscreen,
+                duration,
                 position,
                 false
             );
@@ -136,6 +141,7 @@ module.exports = {
             text_font,
             text_color,
             text_font_size,
+            duration,
             textPosition
         );
 

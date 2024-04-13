@@ -40,6 +40,7 @@ Les utilisateurs ne pourront pas utiliser la page upload, mais la version bot es
   - `text_positiony` : la position en y du texte `top | center | bottom`, par défaut `bottom`
   - `text_font` : la police d'écriture du texte, par défaut `Arial`
   - `text_font_size` : la taille de la police d'écriture du texte, par défaut `56`
+  - `duration` : la durée d'affichage d'une image / texte, par défaut `10` secondes
   - `ratio` : taille du fichier x ratio => agrandit ou rétrécit le fichier, par défaut `1`
   - `fullscreen` : affiche le fichier en plein écran, par défaut `false`
   - `anonymous` : affiche le pseudo et l'image de profil de l'envoyeur, par défaut `false`

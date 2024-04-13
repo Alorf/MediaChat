@@ -25,6 +25,9 @@ module.exports = {
         .addStringOption(option => option
             .setName('color')
             .setDescription('Code hexa de la couleur'))
+        .addNumberOption(option => option
+            .setName('duration')
+            .setDescription('durée d\'affichage du texte'))
         .addStringOption(option => option
             .setName('font')
             .setDescription('font'))
@@ -43,6 +46,7 @@ module.exports = {
         const text_positionx = interaction.options.getString('positionx') ? interaction.options.getString('positionx') : "center";
         const text_positiony = interaction.options.getString('positiony') ? interaction.options.getString('positiony') : "bottom";
         const text_color = interaction.options.getString('color') == null ? "#FFFFFF" : interaction.options.getString('color');
+        const duration = interaction.options.getNumber('duration') ?? 10;
         const font = interaction.options.getString('font') ? interaction.options.getString('font') : "Arial";
         const font_size = interaction.options.getInteger('font_size') ? interaction.options.getInteger('font_size') : "100";
         const user = interaction.options.getUser('user');
@@ -63,6 +67,7 @@ module.exports = {
             font,
             text_color,
             font_size,
+            duration,
             position
         );
 

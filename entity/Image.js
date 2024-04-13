@@ -4,6 +4,7 @@ class Image {
   width;
   height;
   fullscreen;
+  duration;
 
   position;
   isBase64;
@@ -13,6 +14,7 @@ class Image {
     width,
     height,
     fullscreen,
+    duration,
     position,
     isBase64
   ) {
@@ -20,6 +22,7 @@ class Image {
     this.width = width;
     this.height = height;
     this.fullscreen = fullscreen;
+    this.duration = duration;
     this.position = position;
     this.isBase64 = isBase64;
   }
